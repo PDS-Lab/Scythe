@@ -393,7 +393,7 @@ void TestTask(){
 }
 
 //  ./skiplist_benchmark_test -r s -a 192.168.1.88 -t 4
-//  ./skiplist_benchmark_test -r c -a 192.168.1.88 -t 1 --coro 1 --op 100 -w 50
+//  ./skiplist_benchmark_test -r c -a 192.168.1.88 -t 8 --coro 8 --op 100 -w 50
 int main(int argc, char** argv) {
   cmdline::parser cmd;
   cmd.add<string>("role", 'r', "the role of process", true, "", cmdline::oneof<string>("c", "s"));
@@ -445,89 +445,89 @@ int main(int argc, char** argv) {
     CoroutinePool pool(thread_num, cort_per_thread);
     pool.start();
 
+    // {
+    //   WaitGroup wg(1);
+    //   pool.enqueue([&wg]() {
+    //     TestTask();
+    //     wg.Done();
+    //   });
+    //   wg.Wait();
+    // }
+
+    LOG_INFO("Init Skiplist for read");
     {
-      WaitGroup wg(1);
-      pool.enqueue([&wg]() {
-        TestTask();
-        wg.Done();
-      });
+      WaitGroup wg(read_num);
+      for (int i = 0; i < read_num; i++) {
+        pool.enqueue([&wg, i]() {
+          InsertTask(i+100000,-1);
+          wg.Done();
+        });
+      }
       wg.Wait();
     }
 
-    // LOG_INFO("Init Skiplist for read");
-    // {
-    //   WaitGroup wg(read_num);
-    //   for (int i = 0; i < read_num; i++) {
-    //     pool.enqueue([&wg, i]() {
-    //       InsertTask(i+100000,-1);
-    //       wg.Done();
-    //     });
-    //   }
-    //   wg.Wait();
-    // }
+    LOG_INFO("Validate init");
+    {
+        WaitGroup wg(1);
+        pool.enqueue([&wg, read_num]() {
+            ValidateTask(100000, 100000 + read_num);
+            wg.Done();
+        });
+        wg.Wait();
+    }
 
-    // LOG_INFO("Validate init");
-    // {
-    //     WaitGroup wg(1);
-    //     pool.enqueue([&wg, read_num]() {
-    //         ValidateTask(100000, 100000 + read_num);
-    //         wg.Done();
-    //     });
-    //     wg.Wait();
-    // }
-
-    // LOG_INFO("Start Test Task .....");
-    // op_with_stat.resize(op_num);
-    // gettimeofday(&starttv, NULL);
-    // {
-    //   WaitGroup wg(op_num);
-    //   for (int i = 0; i < op_num; i++) {
-    //     int insert_cnt = write_num, read_cnt = read_num;
-    //     if(insert_cnt&&read_num){
-    //         op_type op = rnd.next_u32()%2?OP_INSERT:OP_READ;
-    //         if(op==OP_INSERT){
-    //             uint64_t key = rnd.next_u32()%write_num + 100000 + read_num;
-    //             pool.enqueue([&wg, key,i]() {
-    //                 Task(OP_INSERT, key,i);
-    //                 wg.Done();
-    //             });
-    //             --insert_cnt;
-    //         }else{
-    //             //wg.Done();
-    //             uint64_t key = rnd.next_u32()%read_num + 100000;
-    //             pool.enqueue([&wg, key,i]() {
-    //                 Task(OP_READ, key,i);
-    //                 wg.Done();
-    //             });
-    //             --read_cnt;
-    //         }
-    //     }
-    //     else if(insert_cnt){
-    //         uint64_t key = rnd.next_u32()%write_num + 100000 + read_num;
-    //         pool.enqueue([&wg, key,i]() {
-    //             Task(OP_INSERT, key,i);
-    //             wg.Done();
-    //         });
-    //         --insert_cnt;
-    //     }else if(read_cnt){
-    //         uint64_t key = rnd.next_u32()%read_num + 100000;
-    //         pool.enqueue([&wg, key,i]() {
-    //             Task(OP_READ, key,i);
-    //             wg.Done();
-    //         });
-    //         --read_cnt;
-    //     }else{
-    //         LOG_ERROR("should not happen");
-    //     }
-    //   }
-    //   wg.Wait();
-    // }
+    LOG_INFO("Start Test Task .....");
+    op_with_stat.resize(op_num);
+    gettimeofday(&starttv, NULL);
+    {
+      WaitGroup wg(op_num);
+      for (int i = 0; i < op_num; i++) {
+        int insert_cnt = write_num, read_cnt = read_num;
+        if(insert_cnt&&read_num){
+            op_type op = rnd.next_u32()%2?OP_INSERT:OP_READ;
+            if(op==OP_INSERT){
+                uint64_t key = rnd.next_u32()%write_num + 100000 + read_num;
+                pool.enqueue([&wg, key,i]() {
+                    Task(OP_INSERT, key,i);
+                    wg.Done();
+                });
+                --insert_cnt;
+            }else{
+                //wg.Done();
+                uint64_t key = rnd.next_u32()%read_num + 100000;
+                pool.enqueue([&wg, key,i]() {
+                    Task(OP_READ, key,i);
+                    wg.Done();
+                });
+                --read_cnt;
+            }
+        }
+        else if(insert_cnt){
+            uint64_t key = rnd.next_u32()%write_num + 100000 + read_num;
+            pool.enqueue([&wg, key,i]() {
+                Task(OP_INSERT, key,i);
+                wg.Done();
+            });
+            --insert_cnt;
+        }else if(read_cnt){
+            uint64_t key = rnd.next_u32()%read_num + 100000;
+            pool.enqueue([&wg, key,i]() {
+                Task(OP_READ, key,i);
+                wg.Done();
+            });
+            --read_cnt;
+        }else{
+            LOG_ERROR("should not happen");
+        }
+      }
+      wg.Wait();
+    }
     gettimeofday(&endtv, NULL);
     LOG_INFO("PASS");
     LOG_INFO("tasks: %zu",op_with_stat.size());
     uint64_t tot = ((endtv.tv_sec - starttv.tv_sec) * 1000000 + endtv.tv_usec - starttv.tv_usec) >> 1;
         printf("============================ Throughput:%lf MOPS =========================\n", 
-                op_num * cort_per_thread * 1.0 / tot);
+                op_num * 1.0 / tot);
     std::vector<uint64_t> exe_lats, lock_lats, write_lats, validate_lats, commit_lats;
     for(int i=0;i<op_with_stat.size();i++){
       if(op_with_stat[i].op == OP_INSERT){
