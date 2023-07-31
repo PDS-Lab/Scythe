@@ -176,7 +176,9 @@ TxnStatus TOC::lock() {
 
     this_coroutine::co_wait(sz);
     // handle lock
-    int delegate_num = 0;
+    //int delegate_num = 0;
+    std::vector<TLP> delegates;
+    delegates.reserve(sz);
     bool early_abort = false;
     for (int i = 0; i < sz; i++) {
       LOG_DEBUG("[%d] obj [%ld] Read lock_info {lower:%ld, upper:%ld}", this_coroutine::current()->id(),
@@ -186,7 +188,7 @@ TxnStatus TOC::lock() {
         lock_proxy->us_since_poll = RdtscTimer::instance().us();
         lock_proxy->hangout = RTT * lock_proxy->tl.queued_num();
         this_coroutine::scheduler_delegate(lock_proxy);
-        delegate_num++;
+        delegates.push_back(lock_proxy);
       } else if (!ctxs[i].is_queued) {
         early_abort = true;
       } else {
@@ -195,10 +197,13 @@ TxnStatus TOC::lock() {
     }
 
     if (early_abort) {
+      for (auto &tlp : delegates) {
+        tlp->txn_coro = nullptr;
+      }
       return TxnStatus::TOC_RETRY;
     }
 
-    this_coroutine::co_wait(delegate_num);
+    this_coroutine::co_wait(delegates.size());
   }
   // lock success
   return TxnStatus::OK;

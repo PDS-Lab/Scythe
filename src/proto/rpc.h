@@ -136,7 +136,6 @@ enum RpcId {
   QUEUING,
   WRITE,
   QUEUING_READ,
-
   DEBUG_READ,
 };
 

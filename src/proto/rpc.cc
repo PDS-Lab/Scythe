@@ -8,6 +8,23 @@
 #include "storage/object.h"
 #include "util/logging.h"
 
+
+KVEngine* chooseDB(uint64_t obj_id){
+  DB_INDEX db_index = obj_id&db_index_mask;
+  //LOG_INFO("obj_id: %lx, db index:%lx",obj_id,db_index);
+  if(db_index == c_to_d_db_index){
+    return c_to_d_db;
+  }else if(db_index == d_to_w_db_index){
+    return d_to_w_db;
+  }else if(db_index == stock_db_index){
+    return stock_db;
+  }else if(db_index==new_order_db_index){
+    return new_order_db;
+  }
+  //LOG_INFO("should not reach here when benchmark test");
+  return global_db;
+}
+
 void read_service(Rocket::BatchIter* iter, Rocket* rkt) {
   auto req = iter->get_request<ReadReq>();
   auto reply = rkt->gen_reply<ReadReply>(sizeof(ReadReply) + req->size, iter);
@@ -16,7 +33,8 @@ void read_service(Rocket::BatchIter* iter, Rocket* rkt) {
   res.buf_size = req->size;
   res.buf = reply->data;
 
-  auto rc = global_db->get(req->obj_id, res, req->ts, req->mode == Mode::COLD);
+  KVEngine* db = chooseDB(req->obj_id);
+  auto rc = db->get(req->obj_id, res, req->ts, req->mode == Mode::COLD);
   reply->rc = rc;
   reply->version = res.version;
   reply->lock_info = res.lock_info;
@@ -39,6 +57,7 @@ void read_service_cb(void* _reply, void* _arg) {
     }
     case DbStatus::LOCKED: {
       auto queued = reply->lock_info.queued_num();
+      LOG_INFO("read locked, queued num:%lu",queued);
       ctx->rc = queued > kColdWatermark ? TxnStatus::SWITCH : TxnStatus::RETRY;
       break;
     }
@@ -51,8 +70,8 @@ void read_service_cb(void* _reply, void* _arg) {
 void queuing_service(Rocket::BatchIter* iter, Rocket* rkt) {
   auto req = iter->get_request<QueuingReq>();
   auto reply = rkt->gen_reply<QueuingReply>(sizeof(QueuingReply), iter);
-
-  auto lock_reply = global_db->try_lock(req->obj_id, req->ts, Mode::COLD);
+  KVEngine* db = chooseDB(req->obj_id);
+  auto lock_reply = db->try_lock(req->obj_id, req->ts, Mode::COLD);
   reply->lock_reply = lock_reply;
   reply->rkey = global_cm->get_rkey();
 }
@@ -71,9 +90,11 @@ void write_service(Rocket::BatchIter* iter, Rocket* rkt) {
   auto req = iter->get_request<WriteReq>();
   auto reply = rkt->gen_reply<WriteReply>(sizeof(WriteReply), iter);
   if (req->create) {
-    reply->status = global_db->put(req->obj_id, req->data, req->size, req->ts);
+    KVEngine* db = chooseDB(req->obj_id);
+    reply->status = db->put(req->obj_id, req->data, req->size, req->ts);
   } else {
-    reply->status = global_db->update(req->obj_id, req->data, req->size, req->ts);
+    KVEngine* db = chooseDB(req->obj_id);
+    reply->status = db->update(req->obj_id, req->data, req->size, req->ts);
   }
 };
 
@@ -87,15 +108,15 @@ void write_service_cb(void* _reply, void* _arg) {
 void queuing_read_service(Rocket::BatchIter* iter, Rocket* rkt) {
   auto req = iter->get_request<QueuingReadReq>();
   QueuingReadReply* reply = nullptr;
-
-  auto lock_reply = global_db->try_lock(req->obj_id, req->ts, Mode::HOT);
+  KVEngine* db = chooseDB(req->obj_id);
+  auto lock_reply = db->try_lock(req->obj_id, req->ts, Mode::HOT);
   if (lock_reply.is_queued && lock_reply.lock.ready()) {
     // lock & read
     reply = rkt->gen_reply<QueuingReadReply>(sizeof(QueuingReadReply) + req->size, iter);
     ReadResult res;
     res.buf = reply->data;
     res.buf_size = req->size;
-    auto rc = global_db->get(req->obj_id, res, req->ts, false);
+    auto rc = db->get(req->obj_id, res, req->ts, false);
     LOG_ASSERT(rc == DbStatus::OK, "read failed");
     reply->lock_info = lock_reply;
     reply->rkey = global_cm->get_rkey();
@@ -142,8 +163,8 @@ void debug_read_service(Rocket::BatchIter* iter, Rocket* rkt) {
   ReadResult res;
   res.buf = reply->raw;
   res.buf_size = req->sz;
-
-  reply->rc = global_db->get(req->id, res, LATEST, true);
+  KVEngine* db = chooseDB(req->id);
+  reply->rc = db->get(req->id, res, LATEST, true);
   reply->sz = req->sz;
 };
 

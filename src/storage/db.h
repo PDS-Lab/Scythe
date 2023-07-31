@@ -50,3 +50,14 @@ class KVEngine {
 };
 
 extern KVEngine *global_db;
+extern KVEngine *c_to_d_db;
+extern KVEngine *d_to_w_db;
+extern KVEngine *stock_db;
+extern KVEngine *new_order_db;
+
+typedef uint64_t DB_INDEX;
+extern const DB_INDEX c_to_d_db_index;
+extern const DB_INDEX d_to_w_db_index;
+extern const DB_INDEX stock_db_index;
+extern const DB_INDEX new_order_db_index;
+extern const DB_INDEX db_index_mask;

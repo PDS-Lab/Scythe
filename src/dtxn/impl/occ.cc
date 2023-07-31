@@ -173,21 +173,22 @@ TxnStatus OCC::lock() {
 
   this_coroutine::co_wait(sz);
   for (int i = 0; i < sz; i++) {
-    LOG_INFO("[%d] [obj %lu] lock info {lower:%lu, upper:%lu, ts:%lu}", this_coroutine::current()->id(),
+    LOG_INFO("[%d] [obj %lx] lock info {lower:%lu, upper:%lu, ts:%lu}", this_coroutine::current()->id(),
              ctxs[i].obj->id(), ctxs[i].obj->lock_proxy->tl.lower, ctxs[i].obj->lock_proxy->tl.upper,
              ctxs[i].obj->lock_proxy->tl.queued_ts);
   }
   // handle lock
-  int delegate_num = 0;
   bool early_abort = false;
   bool switch_mode = false;
+  std::vector<TLP> delegates;
+  delegates.reserve(sz);
   for (int i = 0; i < sz; i++) {
     if (ctxs[i].is_queued && !ctxs[i].obj->lock_proxy->tl.ready()) {
       auto &lock_proxy = ctxs[i].obj->lock_proxy;
       lock_proxy->us_since_poll = RdtscTimer::instance().us();
       lock_proxy->hangout = RTT * lock_proxy->tl.queued_num();
       this_coroutine::scheduler_delegate(lock_proxy);
-      delegate_num++;
+      delegates.push_back(lock_proxy);
     } else if (!ctxs[i].is_queued) {
       early_abort = true;
       switch_mode = (switch_mode || ctxs[i].obj->lock_proxy->tl.queued_num() > kColdWatermark);
@@ -197,10 +198,14 @@ TxnStatus OCC::lock() {
   }
 
   if (switch_mode || early_abort) {
+    // 事务失败了，需要把前面托管的lock对当前协程的引用去掉，避免主协程认为这个协程还在等lock，从而把它额外唤醒了
+    for (auto &tlp : delegates) {
+      tlp->txn_coro = nullptr;  // 不用担心读写并发，因为业务线程和托管的主协程在同一个线程中
+    }
     return switch_mode ? TxnStatus::SWITCH : TxnStatus::RETRY;
   }
 
-  this_coroutine::co_wait(delegate_num);
+  this_coroutine::co_wait(delegates.size());
   // lock success
   return TxnStatus::OK;
 };

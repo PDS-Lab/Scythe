@@ -2,7 +2,7 @@
 
 #include "cmdline.h"
 #include "coroutine_pool/coroutine_pool.h"
-#include "benchmark_randomer.h"
+#include "config/benchmark_randomer.h"
 #include "dtxn/dtxn.h"
 #include "proto/rpc.h"
 #include "rrpc/rrpc.h"
@@ -61,19 +61,16 @@ struct Order {
 };
 
 const uint64_t warehouse_num_ = 10;
-const uint64_t item_types_    = 1000;
+const uint64_t item_types_    = 100000;
 const uint64_t district_per_w_ = 10;
-const uint64_t customer_per_d_ = 100;
+const uint64_t customer_per_d_ = 300;
 
 typedef uint64_t db_index;
 
 const db_index TestKey = ~0;
-const db_index c_to_d_db_index = 0;
-const db_index d_to_w_db_index = 0x4000000000000000;
-const db_index stock_db_index = 0x8000000000000000;
-const db_index new_order_db_index = 0xc000000000000000;
 
-thread_local std::mt19937      gen_;
+
+thread_local std::mt19937_64      gen_;
 std::uniform_int_distribution<>* customer_id_randomer_;
 zipf_table_distribution<>* item_id_randomer_;
 std::uniform_int_distribution<>* item_num_randomer_;
@@ -113,7 +110,7 @@ inline uint64_t stock_wrapper(uint64_t w_id,uint64_t i_id){
 }
 
 inline uint64_t new_order_wrapper(uint64_t c_id, uint64_t i_id, uint64_t next_order_id){
-  return new_order_db_index | (c_id << (uint64_t)48) | (i_id << (uint64_t)32) | (next_order_id & 0xffffffff);
+  return new_order_db_index | (c_id << (uint64_t)40) | (i_id << (uint64_t)20) | (next_order_id & 0xfffffffff);
 }
 
 double pcalc(double rate, std::vector<uint64_t>& data) {
@@ -302,8 +299,8 @@ void InsertTask(){
   new_txn->Commit();
 }
 
-//./tpcc_benchmark_test -r s -a 192.168.1.88 -t 1 -c 10 -n 1000
-//./tpcc_benchmark_test -r c -a 192.168.1.88 -t 1 -c 8 -n 1000
+//./tpcc_bench_test -r s -a 192.168.1.88 -t 10 -c 1 -n 100000
+//./tpcc_bench_test -r c -a 192.168.1.88 -t 8 -c 8 -n 100000
 int main(int argc, char** argv) {
   cmdline::parser cmd;
   cmd.add<string>("role", 'r', "the role of process", true, "", cmdline::oneof<string>("c", "s"));
@@ -325,6 +322,10 @@ int main(int argc, char** argv) {
     global_cm = new RdmaCM(&rte, ip, port, rte.get_rdma_buffer(), rte.get_buffer_size(), thread_num);
     InitMemPool(rte.get_rdma_buffer(), rte.get_buffer_size());
     global_db = new KVEngine();
+    c_to_d_db = new KVEngine();
+    d_to_w_db = new KVEngine();
+    stock_db = new KVEngine();
+    new_order_db = new KVEngine();
     RegisterService();
 
     uint64_t val = 0xDEADBEEFBEEFDEAD;
@@ -335,11 +336,11 @@ int main(int argc, char** argv) {
         uint64_t c_id = d_id * customer_per_d_; uint64_t tmp;
         Customer c_value;
         for (uint64_t i = 0; i < customer_per_d_; ++i) {
-            tmp = c_id + i;
-            uint64_t c_id_key = c_to_d_wrapper((uint64_t)tmp);
-            c_value.d_id = d_id;
-            global_db->put(c_id_key, &c_value, sizeof(Customer), TSO::get_ts());
-            //LOG_DEBUG("[server] insert to c_to_d db, key:%lx, value:%lu",c_id_key, d_id);
+          tmp = c_id + i;
+          uint64_t c_id_key = c_to_d_wrapper((uint64_t)tmp);
+          c_value.d_id = d_id;
+          c_to_d_db->put(c_id_key, &c_value, sizeof(Customer), TSO::get_ts());
+          //LOG_DEBUG("[server] insert to c_to_d db, key:%lx, value:%lu",c_id_key, d_id);
         }
     }
     LOG_INFO("[server] load c_to_d table finish");
@@ -351,7 +352,7 @@ int main(int argc, char** argv) {
         tmp = d_id + i;
         uint64_t d_id_key = d_to_w_wrapper((uint64_t)tmp);
         d_value.w_id = w_id; d_value.next_order_id = 0;
-        global_db->put(d_id_key, &d_value, sizeof(d_value), TSO::get_ts());
+        d_to_w_db->put(d_id_key, &d_value, sizeof(d_value), TSO::get_ts());
         //LOG_DEBUG("[server] insert to d_to_w db, key:%lx, value:[w_id:%lu, next_id:%lu]",d_id_key, w_id,d_value.next_order_id = 0);
       }
     }
@@ -362,7 +363,7 @@ int main(int argc, char** argv) {
         for (uint64_t i_id = 0; i_id < item_types_; ++i_id) {
           uint64_t stock_key = stock_wrapper((uint64_t)(w_id),(uint64_t)(i_id));
           stock_value.item_num = 100000;
-          global_db->put(stock_key, &stock_value, sizeof(stock_value), TSO::get_ts());
+          stock_db->put(stock_key, &stock_value, sizeof(stock_value), TSO::get_ts());
           //LOG_DEBUG("[server] insert to stock db, key:%lx, value:%lu",stock_key, i_id);
         }
     }
@@ -413,6 +414,6 @@ int main(int argc, char** argv) {
     uint64_t tot = ((endtv.tv_sec - starttv.tv_sec) * 1000000 + endtv.tv_usec - starttv.tv_usec) >> 1;
         printf("============================ Throughput:%lf MOPS =========================\n", 
                 1.0 * task_num *  COROUTINE_SIZE / tot);
-    DestroyMemPool();
+      DestroyMemPool();
     }
 }

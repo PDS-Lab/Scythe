@@ -13,6 +13,16 @@
 #include "util/mem_pool.h"
 
 KVEngine *global_db;
+KVEngine *c_to_d_db;
+KVEngine *d_to_w_db;
+KVEngine *stock_db;
+KVEngine *new_order_db;
+
+const DB_INDEX c_to_d_db_index = 0;
+const DB_INDEX d_to_w_db_index = 0x1000000000000000;
+const DB_INDEX stock_db_index = 0x2000000000000000;
+const DB_INDEX new_order_db_index = 0x3000000000000000;
+const DB_INDEX db_index_mask=0xf000000000000000;
 
 // implement
 DbStatus KVEngine::get(uint64_t key, ReadResult &res, timestamp_t ts, bool check_lock) {

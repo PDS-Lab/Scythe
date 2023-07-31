@@ -22,6 +22,10 @@ class FastRand {
     SlowRand slow_rand;
     seed_ = 123;
   }
+  FastRand(uint64_t seed) {
+    SlowRand slow_rand;
+    seed_ = seed;
+  }
 
   inline uint32_t next_u32() {
     seed_ = seed_ * 1103515245 + 12345;

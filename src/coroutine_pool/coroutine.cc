@@ -30,6 +30,10 @@ void Coroutine::co_wait(int events) {
 extern thread_local Scheduler *scheduler;
 
 void Coroutine::wakeup_once() {
+  // auto now_waiting_num = --waiting_events_;
+  // if(now_waiting_num < 0 && state_ == CoroutineState::WAITING){
+  //   LOG_DEBUG("should not reach here");
+  // }
   if ((--waiting_events_) == 0) {
     LOG_ASSERT(scheduler != nullptr, "invalid scheduler");
     sched_->addWakupCoroutine(this);

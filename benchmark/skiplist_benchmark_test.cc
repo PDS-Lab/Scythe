@@ -553,7 +553,7 @@ int main(int argc, char** argv) {
                "P50 commit_Latency: %lf us, P99 commit_Latency: %lf us, P999 commit_Latency: %lf us, P9999 commit_Latency: %lf us\n",
                pcalc(0.5, exe_lats), pcalc(0.99, exe_lats), pcalc(0.999, exe_lats), pcalc(0.9999, exe_lats),
                pcalc(0.5, lock_lats), pcalc(0.99, lock_lats), pcalc(0.999, lock_lats), pcalc(0.9999, lock_lats),
-               pcalc(0.5, lock_lats), pcalc(0.99, validate_lats), pcalc(0.999, validate_lats), pcalc(0.9999, validate_lats),
+               pcalc(0.5, validate_lats), pcalc(0.99, validate_lats), pcalc(0.999, validate_lats), pcalc(0.9999, validate_lats),
                pcalc(0.5, write_lats), pcalc(0.99, write_lats), pcalc(0.999, write_lats), pcalc(0.9999, write_lats),
                pcalc(0.5, commit_lats), pcalc(0.99, commit_lats), pcalc(0.999, commit_lats), pcalc(0.9999, commit_lats));
   }
