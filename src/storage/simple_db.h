@@ -14,10 +14,10 @@
 #include "object.h"
 #include "dtxn/takeout_lock.h"
 #include "util/lock.h"
-
-
+#include "benchmark/config/types.h"
 
 // simple KV engine used for disaggregated memroy transaction
+
 class KVEngine {
   static constexpr size_t kReserveSlot = KB(32);
   static constexpr size_t kSharding = 1 << 8;

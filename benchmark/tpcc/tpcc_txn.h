@@ -3,8 +3,8 @@
 #include "proto/rpc.h"
 #include "rrpc/rrpc.h"
 #include "tpcc/tpcc_db.h"
-void TxNewOrder(TPCC_SCHEMA* tpcc_client);
-void TxPayment(TPCC_SCHEMA* tpcc_client);
-void TxDelivery(TPCC_SCHEMA* tpcc_client);
-void TxOrderStatus(TPCC_SCHEMA* tpcc_client);
-void TxStockLevel(TPCC_SCHEMA* tpcc_client);
+TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc_client);
+TxnStatus TxPayment(TPCC_SCHEMA* tpcc_client);
+TxnStatus TxDelivery(TPCC_SCHEMA* tpcc_client);
+TxnStatus TxOrderStatus(TPCC_SCHEMA* tpcc_client);
+TxnStatus TxStockLevel(TPCC_SCHEMA* tpcc_client);

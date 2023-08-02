@@ -17,6 +17,7 @@ KVEngine *c_to_d_db;
 KVEngine *d_to_w_db;
 KVEngine *stock_db;
 KVEngine *new_order_db;
+std::vector<KVEngine*> dbs;
 
 const DB_INDEX c_to_d_db_index = 0;
 const DB_INDEX d_to_w_db_index = 0x1000000000000000;

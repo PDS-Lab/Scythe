@@ -38,15 +38,27 @@ class TxnObj {
   TxnObj(uint64_t obj_id, size_t size)
       : id_(obj_id),
         size_(size),
+        table_id_(0),
         buf_(operator new(size)),
         lock_proxy(std::make_shared<TakeoutLockProxy>(this_coroutine::current(), this)),
         hold_lock(false),
         own_buf_(true) {
     // LOG_INFO("[%d] Make TxnObj: [%lu]", this_coroutine::current()->id(), obj_id);
   }
-  TxnObj(uint64_t obj_id, size_t size, void *buf)
+  TxnObj(uint64_t obj_id, size_t size,uint32_t table_id)
       : id_(obj_id),
         size_(size),
+        table_id_(table_id),
+        buf_(operator new(size)),
+        lock_proxy(std::make_shared<TakeoutLockProxy>(this_coroutine::current(), this)),
+        hold_lock(false),
+        own_buf_(true) {
+    // LOG_INFO("[%d] Make TxnObj: [%lu]", this_coroutine::current()->id(), obj_id);
+  }
+  TxnObj(uint64_t obj_id, size_t size, void *buf, uint32_t table_id = 0)
+      : id_(obj_id),
+        size_(size),
+        table_id_(table_id),
         buf_(buf),
         lock_proxy(std::make_shared<TakeoutLockProxy>(this_coroutine::current(), this)),
         hold_lock(false),
@@ -71,6 +83,7 @@ class TxnObj {
 
   uint32_t size() const { return size_; }
   uint64_t id() const { return id_; }
+  uint32_t table_id() const {return table_id_;}
 
   void set_new() {
     put_new_ = true;
@@ -82,6 +95,7 @@ class TxnObj {
  private:
   TLP lock_proxy;
   bool hold_lock;
+  
 
   // ----------- used for OCC validate -------
   uint32_t rkey;
@@ -89,6 +103,7 @@ class TxnObj {
   uint64_t obj_addr;
 
   uint64_t id_;
+  uint32_t table_id_;
   uint32_t size_;
   void *buf_;
   bool own_buf_;

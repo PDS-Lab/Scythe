@@ -28,6 +28,7 @@ TxnStatus OCC::Read(TxnObjPtr obj) {
   auto req = rkt->gen_request<ReadReq>(sizeof(ReadReq), READ, read_service_cb, &ctx);
   req->obj_id = obj->id();
   req->size = obj->size();
+  req->table_id = obj->table_id();
   req->ts = begin_ts_;
   req->mode = Mode::COLD;
   rkt->batching();
@@ -52,6 +53,7 @@ TxnStatus OCC::Read(const std::vector<TxnObjPtr> &objs) {
     auto req = rkt->gen_request<ReadReq>(sizeof(ReadReq), READ, read_service_cb, &ctxs[cnt]);
     req->obj_id = obj->id();
     req->size = obj->size();
+    req->table_id = obj->table_id();
     req->ts = begin_ts_;
     req->mode = Mode::COLD;
     rkt->batching();
@@ -165,6 +167,7 @@ TxnStatus OCC::lock() {
 
     auto req = rkt->gen_request<QueuingReq>(sizeof(QueuingReq), QUEUING, queuing_service_cb, &ctxs[sz]);
     req->obj_id = obj->id();
+    req->table_id = obj->table_id();
     req->ts = begin_ts_;
     req->mode = Mode::COLD;
     rkt->batching();
@@ -258,6 +261,7 @@ TxnStatus OCC::issue_write() {
     auto req = rkt->gen_request<WriteReq>(sizeof(WriteReq) + obj->size(), WRITE, write_service_cb, &ctxs[sz]);
     req->obj_id = obj->id();
     req->size = obj->size();
+    req->table_id = obj->table_id();
     req->ts = commit_ts_;
     req->create = obj->put_new_;
     memcpy(req->data, obj->data(), obj->size());

@@ -28,12 +28,13 @@ KVEngine* chooseDB(uint64_t obj_id){
 void read_service(Rocket::BatchIter* iter, Rocket* rkt) {
   auto req = iter->get_request<ReadReq>();
   auto reply = rkt->gen_reply<ReadReply>(sizeof(ReadReply) + req->size, iter);
+  
 
   ReadResult res;
   res.buf_size = req->size;
   res.buf = reply->data;
-
-  KVEngine* db = chooseDB(req->obj_id);
+  
+  KVEngine* db = dbs[req->table_id];
   auto rc = db->get(req->obj_id, res, req->ts, req->mode == Mode::COLD);
   reply->rc = rc;
   reply->version = res.version;
@@ -70,7 +71,7 @@ void read_service_cb(void* _reply, void* _arg) {
 void queuing_service(Rocket::BatchIter* iter, Rocket* rkt) {
   auto req = iter->get_request<QueuingReq>();
   auto reply = rkt->gen_reply<QueuingReply>(sizeof(QueuingReply), iter);
-  KVEngine* db = chooseDB(req->obj_id);
+  KVEngine* db = dbs[req->table_id];
   auto lock_reply = db->try_lock(req->obj_id, req->ts, Mode::COLD);
   reply->lock_reply = lock_reply;
   reply->rkey = global_cm->get_rkey();
@@ -90,10 +91,10 @@ void write_service(Rocket::BatchIter* iter, Rocket* rkt) {
   auto req = iter->get_request<WriteReq>();
   auto reply = rkt->gen_reply<WriteReply>(sizeof(WriteReply), iter);
   if (req->create) {
-    KVEngine* db = chooseDB(req->obj_id);
+    KVEngine* db = dbs[req->table_id];
     reply->status = db->put(req->obj_id, req->data, req->size, req->ts);
   } else {
-    KVEngine* db = chooseDB(req->obj_id);
+    KVEngine* db = dbs[req->table_id];
     reply->status = db->update(req->obj_id, req->data, req->size, req->ts);
   }
 };
@@ -108,7 +109,7 @@ void write_service_cb(void* _reply, void* _arg) {
 void queuing_read_service(Rocket::BatchIter* iter, Rocket* rkt) {
   auto req = iter->get_request<QueuingReadReq>();
   QueuingReadReply* reply = nullptr;
-  KVEngine* db = chooseDB(req->obj_id);
+  KVEngine* db = dbs[req->table_id];
   auto lock_reply = db->try_lock(req->obj_id, req->ts, Mode::HOT);
   if (lock_reply.is_queued && lock_reply.lock.ready()) {
     // lock & read
@@ -163,7 +164,7 @@ void debug_read_service(Rocket::BatchIter* iter, Rocket* rkt) {
   ReadResult res;
   res.buf = reply->raw;
   res.buf_size = req->sz;
-  KVEngine* db = chooseDB(req->id);
+  KVEngine* db = dbs[req->table_id];
   reply->rc = db->get(req->id, res, LATEST, true);
   reply->sz = req->sz;
 };

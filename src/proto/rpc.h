@@ -16,6 +16,7 @@
 struct ReadReq {
   timestamp_t ts;
   uint64_t obj_id;
+  uint32_t table_id = 0;
   uint32_t size;
   Mode mode;
 };
@@ -47,6 +48,7 @@ struct QueuingReq {
   Mode mode;
   timestamp_t ts;
   uint64_t obj_id;
+  uint32_t table_id = 0;
 };
 
 struct QueuingCtx {
@@ -69,6 +71,7 @@ void queuing_service_cb(void* _reply, void* _arg);
 struct WriteReq {
   bool create;
   uint64_t obj_id;
+  uint32_t table_id = 0;
   timestamp_t ts;
   size_t size;
   data_t data[0];
@@ -92,6 +95,7 @@ void write_service_cb(void* _reply, void* _arg);
 struct QueuingReadReq {
   timestamp_t ts;
   uint64_t obj_id;
+  uint32_t table_id = 0;
   uint32_t size;
 };
 
@@ -113,6 +117,7 @@ void queuing_read_service_cb(void* _reply, void* _arg);
 // -------------------- Debug -------------------
 struct DebugRead {
   uint64_t id;
+  uint32_t table_id = 0;
   uint32_t sz;
   timestamp_t ts;
 };

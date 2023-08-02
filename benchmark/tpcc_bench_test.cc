@@ -193,10 +193,7 @@ void TPCCtask(OpAndModeWithStatistics& op){
       auto new_order = new_order_obj->get_as<Order>();
       new_order->item_num = i_num;
       new_order_obj->set_new();
-      LOG_DEBUG("Insert new order with new_order_key:%lx,c_id:%lx,i_id:%lx,cur_order_id:%lx",new_order_key,c_id,i_id,cur_order_id);
       
-      LOG_DEBUG("after change, new next order:%lu",district->next_order_id);
-      LOG_DEBUG("after change, new item num:%lu",stock->item_num);
       //LOG_DEBUG("after change, new order:%lu",new_order->item_num);
       rc = txn->Write(d_id_obj);
       EXPECT_EQ(rc,TxnStatus::OK);
@@ -326,6 +323,11 @@ int main(int argc, char** argv) {
     d_to_w_db = new KVEngine();
     stock_db = new KVEngine();
     new_order_db = new KVEngine();
+    dbs.reserve(10);
+    dbs[0] = global_db;
+    for(int i=1; i<10; i++){
+      dbs[i] = new KVEngine();
+    }
     RegisterService();
 
     uint64_t val = 0xDEADBEEFBEEFDEAD;
@@ -413,7 +415,7 @@ int main(int argc, char** argv) {
     LOG_INFO("PASS");
     uint64_t tot = ((endtv.tv_sec - starttv.tv_sec) * 1000000 + endtv.tv_usec - starttv.tv_usec) >> 1;
         printf("============================ Throughput:%lf MOPS =========================\n", 
-                1.0 * task_num *  COROUTINE_SIZE / tot);
+                1.0 * task_num  / tot);
       DestroyMemPool();
     }
 }

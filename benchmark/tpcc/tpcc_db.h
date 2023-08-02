@@ -396,6 +396,10 @@ struct tpcc_stock_val_t {
 static_assert(sizeof(tpcc_stock_val_t) == 328, "");  // add debug magic
 // static_assert(sizeof(tpcc_stock_val_t) == 320, "");
 
+const std::string tpcc_zip_magic("123456789");  // warehouse, district
+const uint32_t tpcc_no_time_magic = 0;          // customer, history, order
+const int64_t tpcc_add_magic = 818;             // customer_index, order_index, new_order, order_line, item, stock
+
 /* STORED PROCEDURE EXECUTION FREQUENCIES (0-100) */
 #define FREQUENCY_NEW_ORDER 45
 #define FREQUENCY_PAYMENT 43
@@ -417,8 +421,8 @@ const std::string TPCC_TX_NAME[TPCC_TX_TYPES] = {"NewOrder", "Payment", "Deliver
 "OrderStatus", "StockLevel"};
 
 // Table id
-enum class TPCCTableType : uint64_t {
-  kWarehouseTable = 0,
+enum class TPCCTableType : uint32_t {
+  kWarehouseTable = 1,
   kDistrictTable,
   kCustomerTable,
   kHistoryTable,
@@ -429,6 +433,7 @@ enum class TPCCTableType : uint64_t {
   kStockTable,
   kCustomerIndexTable,
   kOrderIndexTable,
+  TableNum
 };
 
 class TPCC_SCHEMA{
@@ -436,7 +441,7 @@ public:
     std::string bench_name;
 
     // Pre-defined constants, which will be modified for tests
-    uint32_t num_warehouse = 3000;
+    uint32_t num_warehouse = 10;
 
     uint32_t num_district_per_warehouse = 10;
 
@@ -495,10 +500,10 @@ public:
     void LoadTable();
     void PopulateWarehouseTable(uint64_t seed);
     void PopulateDistrictTable(uint64_t seed);
-    void PopulateCustomerAndHistoryTable();
-    void PopulateOrderNewOrderAndOrderLineTable();
-    void PopulateItemTable();
-    void PopulateStockTable();
+    void PopulateCustomerAndHistoryTable(uint64_t seed);
+    void PopulateOrderNewOrderAndOrderLineTable(uint64_t seed);
+    void PopulateItemTable(uint64_t seed);
+    void PopulateStockTable(uint64_t seed);
 
 
      

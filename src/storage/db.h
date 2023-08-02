@@ -9,6 +9,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "common.h"
 #include "object.h"
@@ -54,6 +55,7 @@ extern KVEngine *c_to_d_db;
 extern KVEngine *d_to_w_db;
 extern KVEngine *stock_db;
 extern KVEngine *new_order_db;
+extern std::vector<KVEngine*> dbs;
 
 typedef uint64_t DB_INDEX;
 extern const DB_INDEX c_to_d_db_index;
