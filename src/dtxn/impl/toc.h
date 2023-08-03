@@ -17,7 +17,7 @@ class TOC : public Transaction {
   TxnStatus lock();
   TxnStatus issue_write();
   TxnStatus unlock();
-  TOC() = default;
+  TOC(uint32_t table_num);
   std::list<TxnObjPtr> read_set_;
   std::list<TxnObjPtr> lock_set_;
   std::list<TxnObjPtr> write_set_;

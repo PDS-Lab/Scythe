@@ -16,6 +16,10 @@
 #include "util/logging.h"
 #include "util/timer.h"
 
+OCC::OCC(uint32_t table_num){
+  obj_cache_.resize(table_num);
+}
+
 TxnStatus OCC::Read(TxnObjPtr obj) {
   if (obj->op() & TxnObj::READ) {
     return TxnStatus::OK;

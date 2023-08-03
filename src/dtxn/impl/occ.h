@@ -17,7 +17,7 @@ class OCC : public Transaction {
   TxnStatus Rollback() override;
 
  private:
-  OCC() = default;
+  OCC(uint32_t table_num);
   TxnStatus validate();
   TxnStatus lock();
   TxnStatus issue_write();

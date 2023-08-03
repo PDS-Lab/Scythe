@@ -8,3 +8,4 @@ TxnStatus TxPayment(TPCC_SCHEMA* tpcc_client);
 TxnStatus TxDelivery(TPCC_SCHEMA* tpcc_client);
 TxnStatus TxOrderStatus(TPCC_SCHEMA* tpcc_client);
 TxnStatus TxStockLevel(TPCC_SCHEMA* tpcc_client);
+TxnStatus TxTestReadWrite();

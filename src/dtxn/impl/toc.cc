@@ -4,6 +4,10 @@
 #include "rrpc/rdma_cm.h"
 #include "util/logging.h"
 
+TOC::TOC(uint32_t table_num){
+  obj_cache_.resize(table_num);
+}
+
 TxnStatus TOC::Read(TxnObjPtr obj) {
   if (obj->op() & TxnObj::READ) {
     return TxnStatus::OK;

@@ -27,39 +27,38 @@ TPCCTxType* TPCC_SCHEMA::CreateWorkgenArray() {
 }
 
 void TPCC_SCHEMA::LoadTable(){
-    
-    warehouse_table = new KVEngine();
-    dbs[(size_t)TPCCTableType::kWarehouseTable] = warehouse_table;
+    warehouse_table_ = new KVEngine();
+    dbs[(size_t)TPCCTableType::kWarehouseTable] = warehouse_table_;
     PopulateWarehouseTable(9324);
 
-    // district_table = new KVEngine();
-    // dbs[(size_t)TPCCTableType::kDistrictTable] = district_table;
+    // district_table_ = new KVEngine();
+    // dbs[(size_t)TPCCTableType::kDistrictTable] = district_table_;
     // PopulateDistrictTable(129856349);
 
-    // customer_table = new KVEngine();
-    // customer_index_table = new KVEngine();
-    // history_table = new KVEngine();
-    // dbs[(size_t)TPCCTableType::kCustomerTable] = customer_table;
-    // dbs[(size_t)TPCCTableType::kCustomerIndexTable] = customer_index_table;
-    // dbs[(size_t)TPCCTableType::kHistoryTable] = history_table;
+    // customer_table_ = new KVEngine();
+    // customer_index_table_ = new KVEngine();
+    // history_table_ = new KVEngine();
+    // dbs[(size_t)TPCCTableType::kCustomerTable] = customer_table_;
+    // dbs[(size_t)TPCCTableType::kCustomerIndexTable] = customer_index_table_;
+    // dbs[(size_t)TPCCTableType::kHistoryTable] = history_table_;
     // PopulateCustomerAndHistoryTable(923587856425);
 
-    // order_table = new KVEngine();
-    // order_line_table = new KVEngine();
-    // order_index_table = new KVEngine();
-    // new_order_table = new KVEngine();
-    // dbs[(size_t)TPCCTableType::kOrderTable] = order_table;
-    // dbs[(size_t)TPCCTableType::kOrderLineTable] = order_line_table;
-    // dbs[(size_t)TPCCTableType::kOrderIndexTable] = order_index_table;
-    // dbs[(size_t)TPCCTableType::kNewOrderTable] = new_order_table;
+    // order_table_ = new KVEngine();
+    // order_line_table_ = new KVEngine();
+    // order_index_table_ = new KVEngine();
+    // new_order_table_ = new KVEngine();
+    // dbs[(size_t)TPCCTableType::kOrderTable] = order_table_;
+    // dbs[(size_t)TPCCTableType::kOrderLineTable] = order_line_table_;
+    // dbs[(size_t)TPCCTableType::kOrderIndexTable] = order_index_table_;
+    // dbs[(size_t)TPCCTableType::kNewOrderTable] = new_order_table_;
     // PopulateOrderNewOrderAndOrderLineTable(2343352);
 
-    // stock_table = new KVEngine();
-    // dbs[(size_t)TPCCTableType::kStockTable] = stock_table;
+    // stock_table_ = new KVEngine();
+    // dbs[(size_t)TPCCTableType::kStockTable] = stock_table_;
     // PopulateStockTable(89785943);
 
-    // item_table = new KVEngine();
-    // dbs[(size_t)TPCCTableType::kItemTable] = item_table;
+    // item_table_ = new KVEngine();
+    // dbs[(size_t)TPCCTableType::kItemTable] = item_table_;
     // PopulateItemTable(235443);
 }
 
@@ -68,7 +67,7 @@ void TPCC_SCHEMA::PopulateWarehouseTable(uint64_t seed){
     int total_warehouse_records_inserted = 0, total_warehouse_records_examined = 0;
     benchmark::FastRandom random_generator(seed);
     int cnt = 0;
-    for(uint32_t w_id = 1;w_id <= num_warehouse;w_id++){
+    for(uint32_t w_id = 1;w_id <= num_warehouse_;w_id++){
         tpcc_warehouse_key_t warehouse_key;
         warehouse_key.w_id = w_id;
 
@@ -90,12 +89,12 @@ void TPCC_SCHEMA::PopulateWarehouseTable(uint64_t seed){
         assert(warehouse_val.w_state[2] == '\0' && strcmp(warehouse_val.w_zip, "123456789") == 0);
         
         auto ts = TSO::get_ts();
-        warehouse_table->put(warehouse_key.item_key, &warehouse_val,sizeof(warehouse_val), ts);
+        warehouse_table_->put(warehouse_key.item_key, &warehouse_val,sizeof(warehouse_val), ts);
         
         // ReadResult res;
         // res.buf_size = sizeof(warehouse_val);
         // res.buf = (void *)malloc(res.buf_size * 2);
-        // warehouse_table->get(warehouse_key.item_key,res,ts,false);
+        // warehouse_table_->get(warehouse_key.item_key,res,ts,false);
         // auto val = static_cast<tpcc_warehouse_val_t*>(res.buf);
         // LOG_DEBUG("magic num:%s, w_name:%s",val->w_zip,val->w_name);
         // ++cnt;
@@ -106,8 +105,8 @@ void TPCC_SCHEMA::PopulateWarehouseTable(uint64_t seed){
 void TPCC_SCHEMA::PopulateDistrictTable(uint64_t seed){
     int total_district_records_inserted = 0, total_district_records_examined = 0;
   FastRandom random_generator(seed);
-  for (uint32_t w_id = 1; w_id <= num_warehouse; w_id++) {
-    for (uint32_t d_id = 1; d_id <= num_district_per_warehouse; d_id++) {
+  for (uint32_t w_id = 1; w_id <= num_warehouse_; w_id++) {
+    for (uint32_t d_id = 1; d_id <= num_district_per_warehouse_; d_id++) {
       tpcc_district_key_t district_key;
       district_key.d_id = MakeDistrictKey(w_id, d_id);
 
@@ -118,7 +117,7 @@ void TPCC_SCHEMA::PopulateDistrictTable(uint64_t seed){
       //  NOTICE:: scale should check consistency requirements.
       //  D_YTD = sum(H_AMOUNT) where (D_W_ID, D_ID) = (H_W_ID, H_D_ID).
       district_val.d_tax = (float)RandomNumber(random_generator, 0, 2000) / 10000.0;
-      district_val.d_next_o_id = num_customer_per_district + 1;
+      district_val.d_next_o_id = num_customer_per_district_ + 1;
       //  NOTICE:: scale should check consistency requirements.
       //  D_NEXT_O_ID - 1 = max(O_ID) = max(NO_O_ID)
 
@@ -133,9 +132,9 @@ void TPCC_SCHEMA::PopulateDistrictTable(uint64_t seed){
       strcpy(district_val.d_state, RandomStr(random_generator, Address::STATE).c_str());
       strcpy(district_val.d_zip, "123456789");
 
-      district_table->put(district_key.item_key, &district_val,sizeof(district_val),TSO::get_ts());
+      district_table_->put(district_key.item_key, &district_val,sizeof(district_val),TSO::get_ts());
 
-    //   total_district_records_inserted += LoadRecord(district_table,
+    //   total_district_records_inserted += LoadRecord(district_table_,
     //                                                 district_key.item_key,
     //                                                 (void*)&district_val,
     //                                                 sizeof(tpcc_district_val_t),
@@ -158,11 +157,11 @@ void TPCC_SCHEMA::PopulateCustomerAndHistoryTable(uint64_t seed) {
   // printf("total_customer_records_inserted = %d, total_customer_records_examined = %d\n",
   //        total_customer_records_inserted, total_customer_records_examined);
   FastRandom random_generator(seed);
-  printf("num_warehouse = %d, num_district_per_warehouse = %d, num_customer_per_district = %d\n",
-         num_warehouse, num_district_per_warehouse, num_customer_per_district);
-  for (uint32_t w_id = 1; w_id <= num_warehouse; w_id++) {
-    for (uint32_t d_id = 1; d_id <= num_district_per_warehouse; d_id++) {
-      for (uint32_t c_id = 1; c_id <= num_customer_per_district; c_id++) {
+  printf("num_warehouse_ = %d, num_district_per_warehouse_ = %d, num_customer_per_district_ = %d\n",
+         num_warehouse_, num_district_per_warehouse_, num_customer_per_district_);
+  for (uint32_t w_id = 1; w_id <= num_warehouse_; w_id++) {
+    for (uint32_t d_id = 1; d_id <= num_district_per_warehouse_; d_id++) {
+      for (uint32_t c_id = 1; c_id <= num_customer_per_district_; c_id++) {
         tpcc_customer_key_t customer_key;
         customer_key.c_id = MakeCustomerKey(w_id, d_id, c_id);
 
@@ -173,7 +172,7 @@ void TPCC_SCHEMA::PopulateCustomerAndHistoryTable(uint64_t seed) {
         else
           strcpy(customer_val.c_credit, "GC");
         std::string c_last;
-        if (c_id <= num_customer_per_district / 3) {
+        if (c_id <= num_customer_per_district_ / 3) {
           c_last.assign(GetCustomerLastName(random_generator, c_id - 1));
           strcpy(customer_val.c_last, c_last.c_str());
         } else {
@@ -209,7 +208,7 @@ void TPCC_SCHEMA::PopulateCustomerAndHistoryTable(uint64_t seed) {
         assert(!strcmp(customer_val.c_middle, "OE"));
         // printf("before insert customer record\n");
 
-        customer_table->put(customer_key.item_key,(void*)&customer_val,sizeof(tpcc_customer_val_t),TSO::get_ts());
+        customer_table_->put(customer_key.item_key,(void*)&customer_val,sizeof(tpcc_customer_val_t),TSO::get_ts());
         total_customer_records_examined++;
 
         // printf("total_customer_records_inserted = %d, total_customer_records_examined = %d\n", total_customer_records_inserted, total_customer_records_examined);
@@ -221,14 +220,14 @@ void TPCC_SCHEMA::PopulateCustomerAndHistoryTable(uint64_t seed) {
 
         tpcc_customer_index_val_t customer_index_val;
         customer_index_val.debug_magic = tpcc_add_magic;
-        // DataItem* mn = GetRecord(customer_index_table,
+        // DataItem* mn = GetRecord(customer_index_table_,
         //                          customer_index_key.item_key,
         //                          (table_id_t)TPCCTableType::kCustomerIndexTable);
         //assert(mn == NULL);
         //if (mn == NULL) {
           customer_index_val.c_id = customer_key.c_id;
-          customer_table->put(customer_index_key.item_key,&customer_index_val,sizeof(tpcc_customer_index_val_t),TSO::get_ts());
-        //   total_customer_index_records_inserted += LoadRecord(customer_index_table,
+          customer_table_->put(customer_index_key.item_key,&customer_index_val,sizeof(tpcc_customer_index_val_t),TSO::get_ts());
+        //   total_customer_index_records_inserted += LoadRecord(customer_index_table_,
         //                                                       customer_index_key.item_key,
         //                                                       (void*)&customer_index_val,
         //                                                       sizeof(tpcc_customer_index_val_t),
@@ -246,8 +245,8 @@ void TPCC_SCHEMA::PopulateCustomerAndHistoryTable(uint64_t seed) {
         strcpy(history_val.h_data,
                RandomStr(random_generator, RandomNumber(random_generator, tpcc_history_val_t::MIN_DATA, tpcc_history_val_t::MAX_DATA)).c_str());
 
-        history_table->put(history_key.item_key,&history_val,sizeof(history_val),TSO::get_ts());
-        // total_history_records_inserted += LoadRecord(history_table,
+        history_table_->put(history_key.item_key,&history_val,sizeof(history_val),TSO::get_ts());
+        // total_history_records_inserted += LoadRecord(history_table_,
         //                                              history_key.item_key,
         //                                              (void*)&history_val,
         //                                              sizeof(tpcc_history_val_t),
@@ -271,24 +270,24 @@ void TPCC_SCHEMA::PopulateOrderNewOrderAndOrderLineTable(uint64_t seed) {
   int total_order_line_records_inserted = 0, total_order_line_records_examined = 0;
   FastRandom random_generator(seed);
   // printf("total_order_records_inserted = %d, total_order_records_examined = %d\n", total_order_records_inserted, total_order_records_examined);
-  for (uint32_t w_id = 1; w_id <= num_warehouse; w_id++) {
-    for (uint32_t d_id = 1; d_id <= num_district_per_warehouse; d_id++) {
+  for (uint32_t w_id = 1; w_id <= num_warehouse_; w_id++) {
+    for (uint32_t d_id = 1; d_id <= num_district_per_warehouse_; d_id++) {
       std::set<uint32_t> c_ids_s;
       std::vector<uint32_t> c_ids;
-      while (c_ids.size() != num_customer_per_district) {
-        const auto x = (random_generator.Next() % num_customer_per_district) + 1;
+      while (c_ids.size() != num_customer_per_district_) {
+        const auto x = (random_generator.Next() % num_customer_per_district_) + 1;
         if (c_ids_s.count(x))
           continue;
         c_ids_s.insert(x);
         c_ids.emplace_back(x);
       }
-      for (uint32_t c = 1; c <= num_customer_per_district; c++) {
+      for (uint32_t c = 1; c <= num_customer_per_district_; c++) {
         tpcc_order_key_t order_key;
         order_key.o_id = MakeOrderKey(w_id, d_id, c);
 
         tpcc_order_val_t order_val;
         order_val.o_c_id = c_ids[c - 1];
-        if (c <= num_customer_per_district * 0.7)
+        if (c <= num_customer_per_district_ * 0.7)
           order_val.o_carrier_id = RandomNumber(random_generator, tpcc_order_val_t::MIN_CARRIER_ID, tpcc_order_val_t::MAX_CARRIER_ID);
         else
           order_val.o_carrier_id = 0;
@@ -297,8 +296,8 @@ void TPCC_SCHEMA::PopulateOrderNewOrderAndOrderLineTable(uint64_t seed) {
         order_val.o_all_local = 1;
         order_val.o_entry_d = GetCurrentTimeMillis();
 
-        order_table->put(order_key.item_key,(void*)&order_val,sizeof(tpcc_order_val_t),TSO::get_ts());
-        // total_order_records_inserted += LoadRecord(order_table,
+        order_table_->put(order_key.item_key,(void*)&order_val,sizeof(tpcc_order_val_t),TSO::get_ts());
+        // total_order_records_inserted += LoadRecord(order_table_,
         //                                            order_key.item_key,
         //                                            (void*)&order_val,
         //                                            sizeof(tpcc_order_val_t),
@@ -313,15 +312,15 @@ void TPCC_SCHEMA::PopulateOrderNewOrderAndOrderLineTable(uint64_t seed) {
         tpcc_order_index_val_t order_index_val;
         order_index_val.o_id = order_key.o_id;
 
-        // DataItem* mn = GetRecord(order_index_table,
+        // DataItem* mn = GetRecord(order_index_table_,
         //                          order_index_key.item_key,
         //                          (table_id_t)TPCCTableType::kOrderIndexTable);
         // assert(mn == NULL);
         // if (mn == NULL) {
           order_index_val.o_id = order_key.o_id;
           order_index_val.debug_magic = tpcc_add_magic;
-          order_index_table->put(order_index_key.item_key,(void*)&order_index_val,sizeof(tpcc_order_index_val_t),TSO::get_ts());
-        //   total_order_index_records_inserted += LoadRecord(order_index_table,
+          order_index_table_->put(order_index_key.item_key,(void*)&order_index_val,sizeof(tpcc_order_index_val_t),TSO::get_ts());
+        //   total_order_index_records_inserted += LoadRecord(order_index_table_,
         //                                                    order_index_key.item_key,
         //                                                    (void*)&order_index_val,
         //                                                    sizeof(tpcc_order_index_val_t),
@@ -331,7 +330,7 @@ void TPCC_SCHEMA::PopulateOrderNewOrderAndOrderLineTable(uint64_t seed) {
           // printf("total_order_index_records_inserted = %d, total_order_index_records_examined = %d\n", total_order_index_records_inserted, total_order_index_records_examined);
         //}
 
-        if (c > num_customer_per_district * tpcc_new_order_val_t::SCALE_CONSTANT_BETWEEN_NEWORDER_ORDER) {
+        if (c > num_customer_per_district_ * tpcc_new_order_val_t::SCALE_CONSTANT_BETWEEN_NEWORDER_ORDER) {
           // MZ-Notation: must obey the relationship between the numbers of entries in Order and New-Order specified in tpcc docs
           // The number of entries in New-Order is about 30% of that in Order
           tpcc_new_order_key_t new_order_key;
@@ -339,8 +338,8 @@ void TPCC_SCHEMA::PopulateOrderNewOrderAndOrderLineTable(uint64_t seed) {
 
           tpcc_new_order_val_t new_order_val;
           new_order_val.debug_magic = tpcc_add_magic;
-          new_order_table->put(new_order_key.item_key,(void*)&new_order_val,sizeof(tpcc_new_order_val_t),TSO::get_ts());
-        //   total_new_order_records_inserted += LoadRecord(new_order_table,
+          new_order_table_->put(new_order_key.item_key,(void*)&new_order_val,sizeof(tpcc_new_order_val_t),TSO::get_ts());
+        //   total_new_order_records_inserted += LoadRecord(new_order_table_,
         //                                                  new_order_key.item_key,
         //                                                  (void*)&new_order_val,
         //                                                  sizeof(tpcc_new_order_val_t),
@@ -354,8 +353,8 @@ void TPCC_SCHEMA::PopulateOrderNewOrderAndOrderLineTable(uint64_t seed) {
           order_line_key.ol_id = MakeOrderLineKey(w_id, d_id, c, l);
 
           tpcc_order_line_val_t order_line_val;
-          order_line_val.ol_i_id = RandomNumber(random_generator, 1, num_item);
-          if (c <= num_customer_per_district * 0.7) {
+          order_line_val.ol_i_id = RandomNumber(random_generator, 1, num_item_);
+          if (c <= num_customer_per_district_ * 0.7) {
             order_line_val.ol_delivery_d = order_val.o_entry_d;
             order_line_val.ol_amount = 0;
           } else {
@@ -369,9 +368,9 @@ void TPCC_SCHEMA::PopulateOrderNewOrderAndOrderLineTable(uint64_t seed) {
           // order_line_val.ol_dist_info comes from stock_data(ol_supply_w_id, ol_o_id)
 
           order_line_val.debug_magic = tpcc_add_magic;
-          assert(order_line_val.ol_i_id >= 1 && static_cast<size_t>(order_line_val.ol_i_id) <= num_item);
-          order_line_table->put(order_line_key.item_key,(void*)&order_line_val,sizeof(tpcc_order_line_val_t),TSO::get_ts());
-        //   total_order_line_records_inserted += LoadRecord(order_line_table,
+          assert(order_line_val.ol_i_id >= 1 && static_cast<size_t>(order_line_val.ol_i_id) <= num_item_);
+          order_line_table_->put(order_line_key.item_key,(void*)&order_line_val,sizeof(tpcc_order_line_val_t),TSO::get_ts());
+        //   total_order_line_records_inserted += LoadRecord(order_line_table_,
         //                                                   order_line_key.item_key,
         //                                                   (void*)&order_line_val,
         //                                                   sizeof(tpcc_order_line_val_t),
@@ -400,7 +399,7 @@ void TPCC_SCHEMA::PopulateOrderNewOrderAndOrderLineTable(uint64_t seed) {
 //   //    printf("total_item_records_inserted = %d, total_item_records_examined = %d\n",
 //   //           total_item_records_inserted, total_item_records_examined);
 //   FastRandom random_generator(seed);
-//   for (int64_t i_id = 1; i_id <= num_item; i_id++) {
+//   for (int64_t i_id = 1; i_id <= num_item_; i_id++) {
 //     tpcc_item_key_t item_key;
 //     item_key.i_id = i_id;
 
@@ -424,7 +423,7 @@ void TPCC_SCHEMA::PopulateOrderNewOrderAndOrderLineTable(uint64_t seed) {
 //     //check item price
 //     assert(item_val.i_price >= 1.0 && item_val.i_price <= 100.0);
 
-//     total_item_records_inserted += LoadRecord(item_table,
+//     total_item_records_inserted += LoadRecord(item_table_,
 //                                               item_key.item_key,
 //                                               (void*)&item_val,
 //                                               sizeof(tpcc_item_val_t),
@@ -438,8 +437,8 @@ void TPCC_SCHEMA::PopulateOrderNewOrderAndOrderLineTable(uint64_t seed) {
 
 // void TPCC_SCHEMA::PopulateStockTable(uint64_t seed) {
 //   int total_stock_records_inserted = 0, total_stock_records_examined = 0;
-//   for (uint32_t w_id = 1; w_id <= num_warehouse; w_id++) {
-//     for (uint32_t i_id = 1; i_id <= num_item; i_id++) {
+//   for (uint32_t w_id = 1; w_id <= num_warehouse_; w_id++) {
+//     for (uint32_t i_id = 1; i_id <= num_item_; i_id++) {
 //       tpcc_stock_key_t stock_key;
 //       stock_key.s_id = MakeStockKey(w_id, i_id);
 
@@ -462,7 +461,7 @@ void TPCC_SCHEMA::PopulateOrderNewOrderAndOrderLineTable(uint64_t seed) {
 //       }
 
 //       stock_val.debug_magic = tpcc_add_magic;
-//       total_stock_records_inserted += LoadRecord(stock_table,
+//       total_stock_records_inserted += LoadRecord(stock_table_,
 //                                                  stock_key.item_key,
 //                                                  (void*)&stock_val,
 //                                                  sizeof(tpcc_stock_val_t),

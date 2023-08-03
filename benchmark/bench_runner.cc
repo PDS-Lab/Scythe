@@ -1,11 +1,12 @@
 #include <gtest/gtest.h>
 #include "util/logging.h"
 #include "cmdline.h"
-#include "tpcc/tpcc_db.h"
-#include "rrpc/rrpc.h"
-#include "proto/rpc.h"
+#include "tpcc/tpcc_txn.h"
+#include "coroutine_pool/coroutine_pool.h"
+#include "util/waitgroup.h"
 using std::string;
 // ./bench_runner -r s -a 192.168.1.88 -t 10 -b tpcc
+// ./bench_runner -r c -a 192.168.1.88 -t 10 -b tpcc
 int main(int argc, char** argv){
     cmdline::parser cmd;
     cmd.add<string>("role", 'r', "the role of process", true, "", cmdline::oneof<string>("c", "s"));
@@ -28,12 +29,25 @@ int main(int argc, char** argv){
         global_cm = new RdmaCM(&rte, ip, 10456, rte.get_rdma_buffer(), rte.get_buffer_size(), 4);
         InitMemPool(rte.get_rdma_buffer(), rte.get_buffer_size());
         RegisterService();
+        TPCC_SCHEMA* tpcc;
         if(bench == "tpcc"){
-            dbs.reserve((size_t)TPCCTableType::TableNum);
+            dbs.resize((size_t)TPCCTableType::TableNum);
             global_db = new KVEngine();
             dbs[0] = global_db;
-            TPCC_SCHEMA tpcc;
-            tpcc.LoadTable();
+            tpcc = new TPCC_SCHEMA();
+            tpcc->LoadTable();
+            
+            auto db = dbs[(size_t)TPCCTableType::kWarehouseTable];
+            int32_t warehouse_id = 1;
+            tpcc_warehouse_key_t ware_key;
+            ware_key.w_id = warehouse_id;
+            ReadResult res;
+            res.buf_size = sizeof(tpcc_warehouse_val_t);
+            res.buf = (void*)new(tpcc_warehouse_val_t);
+            db->get(ware_key.item_key,res,TSO::get_ts(),false);
+            tpcc_warehouse_val_t* val = (tpcc_warehouse_val_t*)res.buf;
+            LOG_INFO("%s",val->w_zip);
+            
         }else if(bench == "smallbank"){
             //TODO
         }else if(bench == "YCSB"){
@@ -51,7 +65,7 @@ int main(int argc, char** argv){
         int thread_num = cmd.get<int>("thread");
         int cort_per_thread = cmd.get<int>("coro");
         int task_num = cmd.get<int>("task");
-
+        string bench = cmd.get<string>("benchmark");
         RrpcRte::Options rte_opt;
         RrpcRte rte(rte_opt);
         global_cm = new RdmaCM(&rte, ip, 10456, rte.get_rdma_buffer(), rte.get_buffer_size());
@@ -60,10 +74,29 @@ int main(int argc, char** argv){
         global_cm->manual_set_network_config(config);
 
         InitMemPool(rte.get_rdma_buffer(), rte.get_buffer_size());
-        TPCC_SCHEMA tpcc;
-        auto work_gen = tpcc.CreateWorkgenArray();
-        
-        delete work_gen;
+        if(bench == "tpcc"){
+            CoroutinePool pool(1, 1);
+            pool.start();
+            {
+                WaitGroup wg(1);
+                pool.enqueue([&wg](){
+                    auto rc = TxTestReadWrite();
+                    wg.Done();
+                });
+                wg.Wait();
+            }
+        }else if(bench == "smallbank"){
+            //TODO
+        }else if(bench == "YCSB"){
+            //TODO
+        }else if(bench == "micro"){
+            //TODO
+        }
+        else {
+            LOG_FATAL("Unexpected benchmark name, should not reach here");
+        }
+        while(true)
+            ;
         DestroyMemPool();
     }
     return 0;

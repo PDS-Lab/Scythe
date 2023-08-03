@@ -437,64 +437,72 @@ enum class TPCCTableType : uint32_t {
 };
 
 class TPCC_SCHEMA{
+private:
 public:
-    std::string bench_name;
+    std::string bench_name_;
 
     // Pre-defined constants, which will be modified for tests
-    uint32_t num_warehouse = 10;
+    uint32_t num_warehouse_ = 10;
 
-    uint32_t num_district_per_warehouse = 10;
+    uint32_t num_district_per_warehouse_ = 10;
 
-    uint32_t num_customer_per_district = 3000;
+    uint32_t num_customer_per_district_ = 3000;
 
-    uint32_t num_item = 100000;
+    uint32_t num_item_ = 100000;
 
-    uint32_t num_stock_per_warehouse = 100000;
+    uint32_t num_stock_per_warehouse_ = 100000;
 
     // /* Tables */ 等待后续基于内存重构db
-    KVEngine* warehouse_table = nullptr;
+    KVEngine* warehouse_table_ = nullptr;
 
-    KVEngine* district_table = nullptr;
+    KVEngine* district_table_ = nullptr;
 
-    KVEngine* customer_table = nullptr;
+    KVEngine* customer_table_ = nullptr;
 
-    KVEngine* history_table = nullptr;
+    KVEngine* history_table_ = nullptr;
 
-    KVEngine* new_order_table = nullptr;
+    KVEngine* new_order_table_ = nullptr;
 
-    KVEngine* order_table = nullptr;
+    KVEngine* order_table_ = nullptr;
 
-    KVEngine* order_line_table = nullptr;
+    KVEngine* order_line_table_ = nullptr;
 
-    KVEngine* item_table = nullptr;
+    KVEngine* item_table_ = nullptr;
 
-    KVEngine* stock_table = nullptr;
+    KVEngine* stock_table_ = nullptr;
 
-    KVEngine* customer_index_table = nullptr;
+    KVEngine* customer_index_table_ = nullptr;
 
-    KVEngine* order_index_table = nullptr;
+    KVEngine* order_index_table_ = nullptr;
     
     //是否要做三备份数据节点，暂时不需要
     //std::vector<HashStore*> primary_table_ptrs;
 
     //std::vector<HashStore*> backup_table_ptrs;
 
-    TPCC_SCHEMA(uint32_t num_warehouse = 3000,
+    TPCC_SCHEMA(
+                uint32_t num_warehouse = 3000,
                 uint32_t num_district_per_warehouse = 10,
                 uint32_t num_customer_per_district = 3000,
                 uint32_t num_item = 100000,
-                uint32_t num_stock_per_warehouse = 100000){
+                uint32_t num_stock_per_warehouse = 100000):
+                num_warehouse_(num_warehouse),
+                num_district_per_warehouse_(num_district_per_warehouse),
+                num_customer_per_district_(num_customer_per_district),
+                num_item_(num_item),
+                num_stock_per_warehouse_(num_stock_per_warehouse)
+                {
         
     }
     ~TPCC_SCHEMA(){
-        delete warehouse_table;
-        delete customer_table;
-        delete history_table;
-        delete new_order_table;
-        delete order_table;
-        delete order_line_table;
-        delete item_table;
-        delete stock_table;
+        delete warehouse_table_;
+        delete customer_table_;
+        delete history_table_;
+        delete new_order_table_;
+        delete order_table_;
+        delete order_line_table_;
+        delete item_table_;
+        delete stock_table_;
     }
     TPCCTxType* CreateWorkgenArray();
     void LoadTable();
@@ -534,12 +542,12 @@ public:
 
    
   int64_t GetItemId(FastRandom& r) {
-    return CheckBetweenInclusive(g_uniform_item_dist ? RandomNumber(r, 1, num_item) : NonUniformRandom(r, 8191, 7911, 1, num_item), 1, num_item);
+    return CheckBetweenInclusive(g_uniform_item_dist ? RandomNumber(r, 1, num_item_) : NonUniformRandom(r, 8191, 7911, 1, num_item_), 1, num_item_);
   }
 
    
   int GetCustomerId(FastRandom& r) {
-    return CheckBetweenInclusive(NonUniformRandom(r, 1023, 259, 1, num_customer_per_district), 1, num_customer_per_district);
+    return CheckBetweenInclusive(NonUniformRandom(r, 1023, 259, 1, num_customer_per_district_), 1, num_customer_per_district_);
   }
 
   // pick a number between [start, end)
@@ -632,7 +640,7 @@ public:
 
    
   int64_t MakeDistrictKey(int32_t w_id, int32_t d_id) {
-    int32_t did = d_id + (w_id * num_district_per_warehouse);
+    int32_t did = d_id + (w_id * num_district_per_warehouse_);
     int64_t id = static_cast<int64_t>(did);
     // assert(districtKeyToWare(id) == w_id);
     return id;
@@ -640,7 +648,7 @@ public:
 
    
   int64_t MakeCustomerKey(int32_t w_id, int32_t d_id, int32_t c_id) {
-    int32_t upper_id = w_id * num_district_per_warehouse + d_id;
+    int32_t upper_id = w_id * num_district_per_warehouse_ + d_id;
     int64_t id = static_cast<int64_t>(upper_id) << 32 | static_cast<int64_t>(c_id);
     // assert(customerKeyToWare(id) == w_id);
     return id;
@@ -665,7 +673,7 @@ public:
    
   uint64_t MakeCustomerIndexKey(int32_t w_id, int32_t d_id, std::string s_last, std::string s_first) {
     uint64_t* seckey = new uint64_t[5];
-    int32_t did = d_id + (w_id * num_district_per_warehouse);
+    int32_t did = d_id + (w_id * num_district_per_warehouse_);
     seckey[0] = did;
     ConvertString((char*)(&seckey[1]), s_last.data(), s_last.size());
     ConvertString((char*)(&seckey[3]), s_first.data(), s_first.size());
@@ -674,22 +682,22 @@ public:
 
    
   int64_t MakeHistoryKey(int32_t h_w_id, int32_t h_d_id, int32_t h_c_w_id, int32_t h_c_d_id, int32_t h_c_id) {
-    int32_t cid = (h_c_w_id * num_district_per_warehouse + h_c_d_id) * num_customer_per_district + h_c_id;
-    int32_t did = h_d_id + (h_w_id * num_district_per_warehouse);
+    int32_t cid = (h_c_w_id * num_district_per_warehouse_ + h_c_d_id) * num_customer_per_district_ + h_c_id;
+    int32_t did = h_d_id + (h_w_id * num_district_per_warehouse_);
     int64_t id = static_cast<int64_t>(cid) << 20 | static_cast<int64_t>(did);
     return id;
   }
 
    
   int64_t MakeNewOrderKey(int32_t w_id, int32_t d_id, int32_t o_id) {
-    int32_t upper_id = w_id * num_district_per_warehouse + d_id;
+    int32_t upper_id = w_id * num_district_per_warehouse_ + d_id;
     int64_t id = static_cast<int64_t>(upper_id) << 32 | static_cast<int64_t>(o_id);
     return id;
   }
 
    
   int64_t MakeOrderKey(int32_t w_id, int32_t d_id, int32_t o_id) {
-    int32_t upper_id = w_id * num_district_per_warehouse + d_id;
+    int32_t upper_id = w_id * num_district_per_warehouse_ + d_id;
     int64_t id = static_cast<int64_t>(upper_id) << 32 | static_cast<int64_t>(o_id);
     // assert(orderKeyToWare(id) == w_id);
     return id;
@@ -697,14 +705,14 @@ public:
 
    
   int64_t MakeOrderIndexKey(int32_t w_id, int32_t d_id, int32_t c_id, int32_t o_id) {
-    int32_t upper_id = (w_id * num_district_per_warehouse + d_id) * num_customer_per_district + c_id;
+    int32_t upper_id = (w_id * num_district_per_warehouse_ + d_id) * num_customer_per_district_ + c_id;
     int64_t id = static_cast<int64_t>(upper_id) << 32 | static_cast<int64_t>(o_id);
     return id;
   }
 
    
   int64_t MakeOrderLineKey(int32_t w_id, int32_t d_id, int32_t o_id, int32_t number) {
-    int32_t upper_id = w_id * num_district_per_warehouse + d_id;
+    int32_t upper_id = w_id * num_district_per_warehouse_ + d_id;
     // 10000000 is the MAX ORDER ID
     int64_t oid = static_cast<int64_t>(upper_id) * 10000000 + static_cast<int64_t>(o_id);
     int64_t olid = oid * 15 + number;
@@ -714,7 +722,7 @@ public:
   }
 
   int64_t MakeStockKey(int32_t w_id, int32_t i_id) {
-    int32_t item_id = i_id + (w_id * num_stock_per_warehouse);
+    int32_t item_id = i_id + (w_id * num_stock_per_warehouse_);
     int64_t s_id = static_cast<int64_t>(item_id);
     // assert(stockKeyToWare(id) == w_id);
     return s_id;

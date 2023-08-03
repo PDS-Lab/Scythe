@@ -57,8 +57,8 @@ void txn(uint64_t a, uint64_t b) {
   do {
     mode = (rc == TxnStatus::SWITCH ? Mode::HOT : mode);
     auto txn = TransactionFactory::TxnBegin(mode);
-    auto A = std::make_shared<TxnObj>(a, sizeof(vtuple_a), &_a);
-    auto B = std::make_shared<TxnObj>(b, sizeof(vtuple_b), &_b);
+    auto A = std::make_shared<TxnObj>(a, 0, sizeof(vtuple_a), &_a);
+    auto B = std::make_shared<TxnObj>(b, 0, sizeof(vtuple_b), &_b);
 
     rc = txn->Read({A, B});
     ASSERT_NE(rc, TxnStatus::INTERNAL);

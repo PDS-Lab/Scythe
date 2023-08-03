@@ -45,7 +45,7 @@ class TxnObj {
         own_buf_(true) {
     // LOG_INFO("[%d] Make TxnObj: [%lu]", this_coroutine::current()->id(), obj_id);
   }
-  TxnObj(uint64_t obj_id, size_t size,uint32_t table_id)
+  TxnObj(uint64_t obj_id, uint32_t table_id,size_t size)
       : id_(obj_id),
         size_(size),
         table_id_(table_id),
@@ -55,7 +55,7 @@ class TxnObj {
         own_buf_(true) {
     // LOG_INFO("[%d] Make TxnObj: [%lu]", this_coroutine::current()->id(), obj_id);
   }
-  TxnObj(uint64_t obj_id, size_t size, void *buf, uint32_t table_id = 0)
+  TxnObj(uint64_t obj_id, uint32_t table_id,size_t size, void *buf)
       : id_(obj_id),
         size_(size),
         table_id_(table_id),
@@ -132,25 +132,25 @@ class Transaction {
   virtual TxnStatus Rollback() = 0;
 
   template <typename... Args>
-  TxnObjPtr GetObject(uint64_t obj_id, Args &&...__args);
+  TxnObjPtr GetObject(uint64_t obj_id,uint32_t table_id, Args &&...__args);
 
  protected:
   timestamp_t begin_ts_;
   timestamp_t commit_ts_;
-  std::unordered_map<uint64_t, TxnObjPtr> obj_cache_;
+  std::vector<std::unordered_map<uint64_t, TxnObjPtr> > obj_cache_;
 };
 
 template <typename... Args>
-TxnObjPtr Transaction::GetObject(uint64_t obj_id, Args &&...__args) {
-  if (obj_cache_.count(obj_id)) {
-    return obj_cache_.at(obj_id);
+TxnObjPtr Transaction::GetObject(uint64_t obj_id,uint32_t table_id, Args &&...__args) {
+  if (obj_cache_[table_id].count(obj_id)) {
+    return obj_cache_[table_id].at(obj_id);
   }
-  auto new_obj = std::make_shared<TxnObj>(obj_id, std::forward<Args>(__args)...);
-  obj_cache_.emplace(obj_id, new_obj);
+  auto new_obj = std::make_shared<TxnObj>(obj_id,table_id, std::forward<Args>(__args)...);
+  obj_cache_[table_id].emplace(obj_id, new_obj);
   return new_obj;
 }
 
 class TransactionFactory {
  public:
-  static std::shared_ptr<Transaction> TxnBegin(Mode mode = Mode::COLD);
+  static std::shared_ptr<Transaction> TxnBegin(Mode mode = Mode::COLD, uint32_t table_num = 12);
 };

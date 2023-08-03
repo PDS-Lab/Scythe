@@ -5,6 +5,7 @@
 #include <random>
 #include <algorithm>
 #include <vector>
+#include <assert.h>
 
 
 namespace benchmark {
