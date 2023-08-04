@@ -143,13 +143,13 @@ struct tpcc_customer_val_t {
   static const int MAX_FIRST = 16;
   static const int MIDDLE = 2;
   static const int MAX_LAST = 16;
-  static const int PHONE = 16;  // C_PHONE random n-string of 16 numbers
+  //static const int PHONE = 16;  // C_PHONE random n-string of 16 numbers
   static const int CREDIT = 2;
   static const int MIN_DATA = 300;  // C_DATA random a-string [300 .. 500]
   static const int MAX_DATA = 500;
 
   float c_credit_lim;
-  float c_discount;
+  //float c_discount;
   float c_balance;
   float c_ytd_payment;
   int32_t c_payment_cnt;
@@ -157,18 +157,17 @@ struct tpcc_customer_val_t {
   char c_first[MAX_FIRST + 1];
   char c_middle[MIDDLE + 1];
   char c_last[MAX_LAST + 1];
-  char c_street_1[Address::MAX_STREET + 1];
-  char c_street_2[Address::MAX_STREET + 1];
-  char c_city[Address::MAX_CITY + 1];
-  char c_state[Address::STATE + 1];
+  //char c_street_1[Address::MAX_STREET + 1];
+  //char c_street_2[Address::MAX_STREET + 1];
+  //char c_city[Address::MAX_CITY + 1];
+  //char c_state[Address::STATE + 1];
   char c_zip[Address::ZIP + 1];
-  char c_phone[PHONE + 1];
+  //char c_phone[PHONE + 1];
   uint32_t c_since;
   char c_credit[CREDIT + 1];
   char c_data[MAX_DATA + 1];
 };
-
-static_assert(sizeof(tpcc_customer_val_t) == 664, "");
+//static_assert(sizeof(tpcc_customer_val_t) == 88, "");
 
 union tpcc_customer_index_key_t {
   struct {
@@ -189,7 +188,6 @@ struct tpcc_customer_index_val_t {
 };
 
 static_assert(sizeof(tpcc_customer_index_val_t) == 16, "");  // add debug magic
-// static_assert(sizeof(tpcc_customer_index_val_t) == 8, "");
 
 /*
  * History table
@@ -481,7 +479,7 @@ public:
     //std::vector<HashStore*> backup_table_ptrs;
 
     TPCC_SCHEMA(
-                uint32_t num_warehouse = 3000,
+                uint32_t num_warehouse = 10,
                 uint32_t num_district_per_warehouse = 10,
                 uint32_t num_customer_per_district = 3000,
                 uint32_t num_item = 100000,

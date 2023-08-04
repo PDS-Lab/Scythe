@@ -80,7 +80,8 @@ int main(int argc, char** argv){
             {
                 WaitGroup wg(1);
                 pool.enqueue([&wg](){
-                    auto rc = TxTestReadWrite();
+                    TPCC_SCHEMA tpcc;
+                    auto rc = TxNewOrder(&tpcc);
                     wg.Done();
                 });
                 wg.Wait();
@@ -95,8 +96,6 @@ int main(int argc, char** argv){
         else {
             LOG_FATAL("Unexpected benchmark name, should not reach here");
         }
-        while(true)
-            ;
         DestroyMemPool();
     }
     return 0;

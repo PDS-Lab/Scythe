@@ -31,39 +31,39 @@ void TPCC_SCHEMA::LoadTable(){
     dbs[(size_t)TPCCTableType::kWarehouseTable] = warehouse_table_;
     PopulateWarehouseTable(9324);
 
-    // district_table_ = new KVEngine();
-    // dbs[(size_t)TPCCTableType::kDistrictTable] = district_table_;
-    // PopulateDistrictTable(129856349);
+    district_table_ = new KVEngine();
+    dbs[(size_t)TPCCTableType::kDistrictTable] = district_table_;
+    PopulateDistrictTable(129856349);
 
-    // customer_table_ = new KVEngine();
-    // customer_index_table_ = new KVEngine();
-    // history_table_ = new KVEngine();
-    // dbs[(size_t)TPCCTableType::kCustomerTable] = customer_table_;
-    // dbs[(size_t)TPCCTableType::kCustomerIndexTable] = customer_index_table_;
-    // dbs[(size_t)TPCCTableType::kHistoryTable] = history_table_;
-    // PopulateCustomerAndHistoryTable(923587856425);
+    customer_table_ = new KVEngine();
+    customer_index_table_ = new KVEngine();
+    history_table_ = new KVEngine();
+    dbs[(size_t)TPCCTableType::kCustomerTable] = customer_table_;
+    dbs[(size_t)TPCCTableType::kCustomerIndexTable] = customer_index_table_;
+    dbs[(size_t)TPCCTableType::kHistoryTable] = history_table_;
+    PopulateCustomerAndHistoryTable(923587856425);
 
-    // order_table_ = new KVEngine();
-    // order_line_table_ = new KVEngine();
-    // order_index_table_ = new KVEngine();
-    // new_order_table_ = new KVEngine();
-    // dbs[(size_t)TPCCTableType::kOrderTable] = order_table_;
-    // dbs[(size_t)TPCCTableType::kOrderLineTable] = order_line_table_;
-    // dbs[(size_t)TPCCTableType::kOrderIndexTable] = order_index_table_;
-    // dbs[(size_t)TPCCTableType::kNewOrderTable] = new_order_table_;
-    // PopulateOrderNewOrderAndOrderLineTable(2343352);
+    order_table_ = new KVEngine();
+    order_line_table_ = new KVEngine();
+    order_index_table_ = new KVEngine();
+    new_order_table_ = new KVEngine();
+    dbs[(size_t)TPCCTableType::kOrderTable] = order_table_;
+    dbs[(size_t)TPCCTableType::kOrderLineTable] = order_line_table_;
+    dbs[(size_t)TPCCTableType::kOrderIndexTable] = order_index_table_;
+    dbs[(size_t)TPCCTableType::kNewOrderTable] = new_order_table_;
+    PopulateOrderNewOrderAndOrderLineTable(2343352);
 
-    // stock_table_ = new KVEngine();
-    // dbs[(size_t)TPCCTableType::kStockTable] = stock_table_;
-    // PopulateStockTable(89785943);
+    stock_table_ = new KVEngine();
+    dbs[(size_t)TPCCTableType::kStockTable] = stock_table_;
+    PopulateStockTable(89785943);
 
-    // item_table_ = new KVEngine();
-    // dbs[(size_t)TPCCTableType::kItemTable] = item_table_;
-    // PopulateItemTable(235443);
+    item_table_ = new KVEngine();
+    dbs[(size_t)TPCCTableType::kItemTable] = item_table_;
+    PopulateItemTable(235443);
 }
 
 void TPCC_SCHEMA::PopulateWarehouseTable(uint64_t seed){
-    LOG_DEBUG("PopulateWarehouseTable");
+    LOG_DEBUG("Populate WarehouseTable Start");
     int total_warehouse_records_inserted = 0, total_warehouse_records_examined = 0;
     benchmark::FastRandom random_generator(seed);
     int cnt = 0;
@@ -99,11 +99,13 @@ void TPCC_SCHEMA::PopulateWarehouseTable(uint64_t seed){
         // LOG_DEBUG("magic num:%s, w_name:%s",val->w_zip,val->w_name);
         // ++cnt;
     }
+    LOG_DEBUG("Populate WarehouseTable Finish");
     //LOG_INFO("%d",cnt);
 }
 
 void TPCC_SCHEMA::PopulateDistrictTable(uint64_t seed){
-    int total_district_records_inserted = 0, total_district_records_examined = 0;
+  LOG_DEBUG("Populate DistrictTable Start");
+  int total_district_records_inserted = 0, total_district_records_examined = 0;
   FastRandom random_generator(seed);
   for (uint32_t w_id = 1; w_id <= num_warehouse_; w_id++) {
     for (uint32_t d_id = 1; d_id <= num_district_per_warehouse_; d_id++) {
@@ -143,6 +145,7 @@ void TPCC_SCHEMA::PopulateDistrictTable(uint64_t seed){
       total_district_records_examined++;
     }
   }
+  LOG_DEBUG("Populate DistrictTable Finish");
   // printf("total_district_records_inserted = %d, total_district_records_examined = %d\n",
   //        total_district_records_inserted, total_district_records_examined);
 }
@@ -151,13 +154,14 @@ void TPCC_SCHEMA::PopulateDistrictTable(uint64_t seed){
 
 // //no batch in this implementation
 void TPCC_SCHEMA::PopulateCustomerAndHistoryTable(uint64_t seed) {
+  LOG_DEBUG("Populate CustomerAndHistoryTable Start");
   int total_customer_records_inserted = 0, total_customer_records_examined = 0;
   int total_customer_index_records_inserted = 0, total_customer_index_records_examined = 0;
   int total_history_records_inserted = 0, total_history_records_examined = 0;
   // printf("total_customer_records_inserted = %d, total_customer_records_examined = %d\n",
   //        total_customer_records_inserted, total_customer_records_examined);
   FastRandom random_generator(seed);
-  printf("num_warehouse_ = %d, num_district_per_warehouse_ = %d, num_customer_per_district_ = %d\n",
+  LOG_INFO("num_warehouse_ = %d, num_district_per_warehouse_ = %d, num_customer_per_district_ = %d\n",
          num_warehouse_, num_district_per_warehouse_, num_customer_per_district_);
   for (uint32_t w_id = 1; w_id <= num_warehouse_; w_id++) {
     for (uint32_t d_id = 1; d_id <= num_district_per_warehouse_; d_id++) {
@@ -166,7 +170,7 @@ void TPCC_SCHEMA::PopulateCustomerAndHistoryTable(uint64_t seed) {
         customer_key.c_id = MakeCustomerKey(w_id, d_id, c_id);
 
         tpcc_customer_val_t customer_val;
-        customer_val.c_discount = (float)(RandomNumber(random_generator, 1, 5000) / 10000.0);
+        //customer_val.c_discount = (float)(RandomNumber(random_generator, 1, 5000) / 10000.0);
         if (RandomNumber(random_generator, 1, 100) <= 10)
           strcpy(customer_val.c_credit, "BC");
         else
@@ -189,23 +193,23 @@ void TPCC_SCHEMA::PopulateCustomerAndHistoryTable(uint64_t seed) {
         customer_val.c_ytd_payment = 10;
         customer_val.c_payment_cnt = 1;
         customer_val.c_delivery_cnt = 0;
-        strcpy(customer_val.c_street_1,
-               RandomStr(random_generator, RandomNumber(random_generator, Address::MIN_STREET, Address::MAX_STREET)).c_str());
-        strcpy(customer_val.c_street_2,
-               RandomStr(random_generator, RandomNumber(random_generator, Address::MIN_STREET, Address::MAX_STREET)).c_str());
-        strcpy(customer_val.c_city,
-               RandomStr(random_generator, RandomNumber(random_generator, Address::MIN_CITY, Address::MAX_CITY)).c_str());
-        strcpy(customer_val.c_state, RandomStr(random_generator, Address::STATE).c_str());
+        // strcpy(customer_val.c_street_1,
+        //        RandomStr(random_generator, RandomNumber(random_generator, Address::MIN_STREET, Address::MAX_STREET)).c_str());
+        // strcpy(customer_val.c_street_2,
+        //        RandomStr(random_generator, RandomNumber(random_generator, Address::MIN_STREET, Address::MAX_STREET)).c_str());
+        // strcpy(customer_val.c_city,
+        //        RandomStr(random_generator, RandomNumber(random_generator, Address::MIN_CITY, Address::MAX_CITY)).c_str());
+        // strcpy(customer_val.c_state, RandomStr(random_generator, Address::STATE).c_str());
         strcpy(customer_val.c_zip, (RandomNStr(random_generator, 4) + "11111").c_str());
 
-        strcpy(customer_val.c_phone, RandomNStr(random_generator, tpcc_customer_val_t::PHONE).c_str());
+        // strcpy(customer_val.c_phone, RandomNStr(random_generator, tpcc_customer_val_t::PHONE).c_str());
         customer_val.c_since = GetCurrentTimeMillis();
-        strcpy(customer_val.c_middle, "OE");
+        // strcpy(customer_val.c_middle, "OE");
         strcpy(customer_val.c_data,
                RandomStr(random_generator, RandomNumber(random_generator, tpcc_customer_val_t::MIN_DATA, tpcc_customer_val_t::MAX_DATA)).c_str());
 
-        assert(!strcmp(customer_val.c_credit, "BC") || !strcmp(customer_val.c_credit, "GC"));
-        assert(!strcmp(customer_val.c_middle, "OE"));
+        // assert(!strcmp(customer_val.c_credit, "BC") || !strcmp(customer_val.c_credit, "GC"));
+        // assert(!strcmp(customer_val.c_middle, "OE"));
         // printf("before insert customer record\n");
 
         customer_table_->put(customer_key.item_key,(void*)&customer_val,sizeof(tpcc_customer_val_t),TSO::get_ts());
@@ -253,10 +257,11 @@ void TPCC_SCHEMA::PopulateCustomerAndHistoryTable(uint64_t seed) {
         //                                              (table_id_t)TPCCTableType::kHistoryTable,
         //                                              mem_store_reserve_param);
         total_history_records_examined++;
-        // printf("total_history_records_inserted = %d, total_history_records_examined = %d\n", total_history_records_inserted, total_history_records_examined);
+        //printf("total_history_records_inserted = %d, total_history_records_examined = %d\n", total_history_records_inserted, total_history_records_examined);
       }
     }
   }
+  LOG_DEBUG("Populate CustomerAndHistoryTable Finish");
 
   // printf("total_customer_records_inserted = %d, total_customer_records_examined = %d\n", total_customer_records_inserted, total_customer_records_examined);
   // printf("total_customer_index_records_inserted = %d, total_customer_index_records_examined = %d\n", total_customer_index_records_inserted, total_customer_index_records_examined);
@@ -264,6 +269,7 @@ void TPCC_SCHEMA::PopulateCustomerAndHistoryTable(uint64_t seed) {
 }
 
 void TPCC_SCHEMA::PopulateOrderNewOrderAndOrderLineTable(uint64_t seed) {
+  LOG_DEBUG("Populate OrderNewOrderAndOrderLineTable Start");
   int total_order_records_inserted = 0, total_order_records_examined = 0;
   int total_order_index_records_inserted = 0, total_order_index_records_examined = 0;
   int total_new_order_records_inserted = 0, total_new_order_records_examined = 0;
@@ -382,6 +388,7 @@ void TPCC_SCHEMA::PopulateOrderNewOrderAndOrderLineTable(uint64_t seed) {
       }
     }
   }
+  
   // printf("total_order_records_inserted = %d, total_order_records_examined = %d\n", total_order_records_inserted, total_order_records_examined);
 
   //RDMA_LOG(INFO) << "total_order_records_inserted = " << total_order_records_inserted << ", total_order_records_examined = " << total_order_records_examined;
@@ -392,87 +399,94 @@ void TPCC_SCHEMA::PopulateOrderNewOrderAndOrderLineTable(uint64_t seed) {
   //        total_new_order_records_inserted, total_new_order_records_examined);
   // printf("total_order_line_records_inserted = %d, total_order_line_records_examined = %d\n",
   //        total_order_line_records_inserted, total_order_line_records_examined);
+  LOG_DEBUG("Populate OrderNewOrderAndOrderLineTable Finish");
 }
 
-// void TPCC_SCHEMA::PopulateItemTable(uint64_t seed) {
-//   int total_item_records_inserted = 0, total_item_records_examined = 0;
-//   //    printf("total_item_records_inserted = %d, total_item_records_examined = %d\n",
-//   //           total_item_records_inserted, total_item_records_examined);
-//   FastRandom random_generator(seed);
-//   for (int64_t i_id = 1; i_id <= num_item_; i_id++) {
-//     tpcc_item_key_t item_key;
-//     item_key.i_id = i_id;
+void TPCC_SCHEMA::PopulateItemTable(uint64_t seed) {
+  LOG_DEBUG("Populate ItemTable Start");
+  int total_item_records_inserted = 0, total_item_records_examined = 0;
+  //    printf("total_item_records_inserted = %d, total_item_records_examined = %d\n",
+  //           total_item_records_inserted, total_item_records_examined);
+  FastRandom random_generator(seed);
+  for (int64_t i_id = 1; i_id <= num_item_; i_id++) {
+    tpcc_item_key_t item_key;
+    item_key.i_id = i_id;
 
-//     /* Initialize the item payload */
-//     tpcc_item_val_t item_val;
+    /* Initialize the item payload */
+    tpcc_item_val_t item_val;
 
-//     strcpy(item_val.i_name,
-//            RandomStr(random_generator, RandomNumber(random_generator, tpcc_item_val_t::MIN_NAME, tpcc_item_val_t::MAX_NAME)).c_str());
-//     item_val.i_price = (float)(RandomNumber(random_generator, 100, 10000) / 100.0);
-//     const int len = RandomNumber(random_generator, tpcc_item_val_t::MIN_DATA, tpcc_item_val_t::MAX_DATA);
-//     if (RandomNumber(random_generator, 1, 100) > 10) {
-//       strcpy(item_val.i_data, RandomStr(random_generator, len).c_str());
-//     } else {
-//       const int startOriginal = RandomNumber(random_generator, 2, (len - 8));
-//       const std::string i_data = RandomStr(random_generator, startOriginal) +
-//                                  "ORIGINAL" + RandomStr(random_generator, len - startOriginal - 8);
-//       strcpy(item_val.i_data, i_data.c_str());
-//     }
-//     item_val.i_im_id = RandomNumber(random_generator, tpcc_item_val_t::MIN_IM, tpcc_item_val_t::MAX_IM);
-//     item_val.debug_magic = tpcc_add_magic;
-//     //check item price
-//     assert(item_val.i_price >= 1.0 && item_val.i_price <= 100.0);
+    strcpy(item_val.i_name,
+           RandomStr(random_generator, RandomNumber(random_generator, tpcc_item_val_t::MIN_NAME, tpcc_item_val_t::MAX_NAME)).c_str());
+    item_val.i_price = (float)(RandomNumber(random_generator, 100, 10000) / 100.0);
+    const int len = RandomNumber(random_generator, tpcc_item_val_t::MIN_DATA, tpcc_item_val_t::MAX_DATA);
+    if (RandomNumber(random_generator, 1, 100) > 10) {
+      strcpy(item_val.i_data, RandomStr(random_generator, len).c_str());
+    } else {
+      const int startOriginal = RandomNumber(random_generator, 2, (len - 8));
+      const std::string i_data = RandomStr(random_generator, startOriginal) +
+                                 "ORIGINAL" + RandomStr(random_generator, len - startOriginal - 8);
+      strcpy(item_val.i_data, i_data.c_str());
+    }
+    item_val.i_im_id = RandomNumber(random_generator, tpcc_item_val_t::MIN_IM, tpcc_item_val_t::MAX_IM);
+    item_val.debug_magic = tpcc_add_magic;
+    //check item price
+    assert(item_val.i_price >= 1.0 && item_val.i_price <= 100.0);
 
-//     total_item_records_inserted += LoadRecord(item_table_,
-//                                               item_key.item_key,
-//                                               (void*)&item_val,
-//                                               sizeof(tpcc_item_val_t),
-//                                               (table_id_t)TPCCTableType::kItemTable,
-//                                               mem_store_reserve_param);
-//     total_item_records_examined++;
-//     // printf("total_item_records_inserted = %d, total_item_records_examined = %d\n", total_item_records_inserted, total_item_records_examined);
-//   }
-//   // printf("total_item_records_inserted = %d, total_item_records_examined = %d\n", total_item_records_inserted, total_item_records_examined);
-// }
+    dbs[(size_t)TPCCTableType::kItemTable]->put(item_key.item_key,(void*)&item_val,sizeof(tpcc_item_val_t),TSO::get_ts());
+    // total_item_records_inserted += LoadRecord(item_table_,
+    //                                           item_key.item_key,
+    //                                           (void*)&item_val,
+    //                                           sizeof(tpcc_item_val_t),
+    //                                           (table_id_t)TPCCTableType::kItemTable,
+    //                                           mem_store_reserve_param);
+    total_item_records_examined++;
+    // printf("total_item_records_inserted = %d, total_item_records_examined = %d\n", total_item_records_inserted, total_item_records_examined);
+  }
+  // printf("total_item_records_inserted = %d, total_item_records_examined = %d\n", total_item_records_inserted, total_item_records_examined);
+  LOG_DEBUG("Populate ItemTable Finish");
+}
 
-// void TPCC_SCHEMA::PopulateStockTable(uint64_t seed) {
-//   int total_stock_records_inserted = 0, total_stock_records_examined = 0;
-//   for (uint32_t w_id = 1; w_id <= num_warehouse_; w_id++) {
-//     for (uint32_t i_id = 1; i_id <= num_item_; i_id++) {
-//       tpcc_stock_key_t stock_key;
-//       stock_key.s_id = MakeStockKey(w_id, i_id);
+void TPCC_SCHEMA::PopulateStockTable(uint64_t seed) {
+  LOG_DEBUG("Populate StockTable Start");
+  int total_stock_records_inserted = 0, total_stock_records_examined = 0;
+  for (uint32_t w_id = 1; w_id <= num_warehouse_; w_id++) {
+    for (uint32_t i_id = 1; i_id <= num_item_; i_id++) {
+      tpcc_stock_key_t stock_key;
+      stock_key.s_id = MakeStockKey(w_id, i_id);
 
-//       /* Initialize the stock payload */
-//       tpcc_stock_val_t stock_val;
-//       FastRandom random_generator(seed);
-//       stock_val.s_quantity = RandomNumber(random_generator, 10, 100);
-//       stock_val.s_ytd = 0;
-//       stock_val.s_order_cnt = 0;
-//       stock_val.s_remote_cnt = 0;
+      /* Initialize the stock payload */
+      tpcc_stock_val_t stock_val;
+      FastRandom random_generator(seed);
+      stock_val.s_quantity = RandomNumber(random_generator, 10, 100);
+      stock_val.s_ytd = 0;
+      stock_val.s_order_cnt = 0;
+      stock_val.s_remote_cnt = 0;
 
-//       const int len = RandomNumber(random_generator, tpcc_stock_val_t::MIN_DATA, tpcc_stock_val_t::MAX_DATA);
-//       if (RandomNumber(random_generator, 1, 100) > 10) {
-//         const std::string s_data = RandomStr(random_generator, len);
-//         strcpy(stock_val.s_data, s_data.c_str());
-//       } else {
-//         const int startOriginal = RandomNumber(random_generator, 2, (len - 8));
-//         const std::string s_data = RandomStr(random_generator, startOriginal) + "ORIGINAL" + RandomStr(random_generator, len - startOriginal - 8);
-//         strcpy(stock_val.s_data, s_data.c_str());
-//       }
+      const int len = RandomNumber(random_generator, tpcc_stock_val_t::MIN_DATA, tpcc_stock_val_t::MAX_DATA);
+      if (RandomNumber(random_generator, 1, 100) > 10) {
+        const std::string s_data = RandomStr(random_generator, len);
+        strcpy(stock_val.s_data, s_data.c_str());
+      } else {
+        const int startOriginal = RandomNumber(random_generator, 2, (len - 8));
+        const std::string s_data = RandomStr(random_generator, startOriginal) + "ORIGINAL" + RandomStr(random_generator, len - startOriginal - 8);
+        strcpy(stock_val.s_data, s_data.c_str());
+      }
 
-//       stock_val.debug_magic = tpcc_add_magic;
-//       total_stock_records_inserted += LoadRecord(stock_table_,
-//                                                  stock_key.item_key,
-//                                                  (void*)&stock_val,
-//                                                  sizeof(tpcc_stock_val_t),
-//                                                  (table_id_t)TPCCTableType::kStockTable,
-//                                                  mem_store_reserve_param);
-//       total_stock_records_examined++;
-//       // printf("total_stock_records_inserted = %d, total_stock_records_examined = %d\n", total_stock_records_inserted, total_stock_records_examined);
-//     }
-//   }
-//   // printf("total_stock_records_inserted = %d, total_stock_records_examined = %d\n", total_stock_records_inserted, total_stock_records_examined);
-// }
+      stock_val.debug_magic = tpcc_add_magic;
+      dbs[(uint32_t)TPCCTableType::kStockTable]->put(stock_key.item_key,(void*)&stock_val,sizeof(tpcc_stock_val_t),TSO::get_ts());
+      // total_stock_records_inserted += LoadRecord(stock_table_,
+      //                                            stock_key.item_key,
+      //                                            (void*)&stock_val,
+      //                                            sizeof(tpcc_stock_val_t),
+      //                                            (table_id_t)TPCCTableType::kStockTable,
+      //                                            mem_store_reserve_param);
+      total_stock_records_examined++;
+      // printf("total_stock_records_inserted = %d, total_stock_records_examined = %d\n", total_stock_records_inserted, total_stock_records_examined);
+    }
+  }
+  // printf("total_stock_records_inserted = %d, total_stock_records_examined = %d\n", total_stock_records_inserted, total_stock_records_examined);
+  LOG_DEBUG("Populate StockTable Finish");
+}
 
 // int TPCC_SCHEMA::LoadRecord(HashStore* table,
 //                      itemkey_t item_key,
