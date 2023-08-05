@@ -26,7 +26,7 @@ int main(int argc, char** argv){
         rte_opt.tcp_port_ = 10456;
 
         RrpcRte rte(rte_opt);
-        global_cm = new RdmaCM(&rte, ip, 10456, rte.get_rdma_buffer(), rte.get_buffer_size(), 4);
+        global_cm = new RdmaCM(&rte, ip, 10456, rte.get_rdma_buffer(), rte.get_buffer_size(), thread_num);
         InitMemPool(rte.get_rdma_buffer(), rte.get_buffer_size());
         RegisterService();
         TPCC_SCHEMA* tpcc;
@@ -75,14 +75,20 @@ int main(int argc, char** argv){
 
         InitMemPool(rte.get_rdma_buffer(), rte.get_buffer_size());
         if(bench == "tpcc"){
-            CoroutinePool pool(1, 1);
+            CoroutinePool pool(thread_num, cort_per_thread);
+            TPCC_SCHEMA tpcc;
             pool.start();
             {
-                WaitGroup wg(1);
-                pool.enqueue([&wg](){
-                    TPCC_SCHEMA tpcc;
-                    auto rc = TxNewOrder(&tpcc);
-                    wg.Done();
+                WaitGroup wg(task_num);
+                pool.enqueue([&wg,task_num,&tpcc](){
+                    for(int i=0;i<task_num;i++){
+                        TxnStatus rc=TxnStatus::OK;
+                        Mode mode = Mode::COLD;
+                        do{
+                            rc = TxNewOrder(&tpcc);
+                        }while(rc!=TxnStatus::OK);
+                        wg.Done();
+                    }
                 });
                 wg.Wait();
             }

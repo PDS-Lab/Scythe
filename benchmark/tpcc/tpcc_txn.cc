@@ -107,21 +107,21 @@ TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc){
         if (check != tpcc_zip_magic) {
             LOG_FATAL("[FATAL] Read warehouse unmatch, tid-cid-txid");
         }
-        else LOG_DEBUG("Read warehouse succeeded");
+        //else LOG_DEBUG("Read warehouse succeeded");
 
         auto cust_val = cust_obj->get_as<tpcc_customer_val_t>();
         // c_since never be 0
         if (cust_val->c_since == 0) {
             LOG_FATAL("[FATAL] Read customer unmatch, tid-cid-txid");
         }
-        else LOG_DEBUG("Read customer succeeded");
+        //else LOG_DEBUG("Read customer succeeded");
 
         auto dist_val = dist_obj->get_as<tpcc_district_val_t>();
         check = std::string(dist_val->d_zip);
         if (check != tpcc_zip_magic) {
             LOG_FATAL("[FATAL] Read district unmatch, tid-cid-txid");
         }
-        else LOG_DEBUG("Read district succeeded");
+        //else LOG_DEBUG("Read district succeeded");
     }
     
     //incrementNextOrderId
@@ -173,7 +173,7 @@ TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc){
       if (item_val->debug_magic != tpcc_add_magic) {
         LOG_FATAL("[FATAL] Read item unmatch, tid-cid-txid: ");
       }
-      else LOG_DEBUG("read item succeeded");
+      //else LOG_DEBUG("read item succeeded");
 
       // read and update stock info
       int64_t s_key = local_stocks[ol_number - 1];
@@ -186,7 +186,7 @@ TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc){
       if (stock_val->debug_magic != tpcc_add_magic) {
         LOG_FATAL("[FATAL] Read stock unmatch, tid-cid-txid: ");
       }
-      else LOG_DEBUG("read stock succeeded");
+      //else LOG_DEBUG("read stock succeeded");
 
       if (stock_val->s_quantity - ol_quantity >= 10) {
         stock_val->s_quantity -= ol_quantity;
