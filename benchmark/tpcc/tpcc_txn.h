@@ -3,9 +3,9 @@
 #include "proto/rpc.h"
 #include "rrpc/rrpc.h"
 #include "tpcc/tpcc_db.h"
-TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc_client);
-TxnStatus TxPayment(TPCC_SCHEMA* tpcc_client);
-TxnStatus TxDelivery(TPCC_SCHEMA* tpcc_client);
-TxnStatus TxOrderStatus(TPCC_SCHEMA* tpcc_client);
-TxnStatus TxStockLevel(TPCC_SCHEMA* tpcc_client);
+TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc_client, Mode mode = Mode::COLD);
+TxnStatus TxPayment(TPCC_SCHEMA* tpcc_client, Mode mode = Mode::COLD);
+TxnStatus TxDelivery(TPCC_SCHEMA* tpcc_client, Mode mode = Mode::COLD);
+TxnStatus TxOrderStatus(TPCC_SCHEMA* tpcc_client, Mode mode = Mode::COLD);
+TxnStatus TxStockLevel(TPCC_SCHEMA* tpcc_client, Mode mode = Mode::COLD);
 TxnStatus TxTestReadWrite();

@@ -1,6 +1,6 @@
 #include "tpcc_txn.h"
 #include "coroutine_pool/coroutine_pool.h"
-TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc){
+TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc, Mode mode){
     /*
   "NEW_ORDER": {
   "getWarehouseTaxRate": "SELECT W_TAX FROM WAREHOUSE WHERE W_ID = ?", # w_id
@@ -15,7 +15,7 @@ TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc){
   "createOrderLine": "INSERT INTO ORDER_LINE (OL_O_ID, OL_D_ID, OL_W_ID, OL_NUMBER, OL_I_ID, OL_SUPPLY_W_ID, OL_DELIVERY_D, OL_QUANTITY, OL_AMOUNT, OL_DIST_INFO) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", # o_id, d_id, w_id, ol_number, ol_i_id, ol_supply_w_id, ol_quantity, ol_amount, ol_dist_info
   },
   */
-    auto txn = TransactionFactory::TxnBegin(Mode::COLD, (uint32_t)TPCCTableType::TableNum);
+    auto txn = TransactionFactory::TxnBegin(mode, (uint32_t)TPCCTableType::TableNum);
     FastRandom random_generator(time(nullptr));
     
     int warehouse_id_start_ = 1;
@@ -217,8 +217,8 @@ TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc){
     auto rc = txn->Commit();
     return rc;    
 }
-TxnStatus TxPayment(TPCC_SCHEMA* tpcc){
-    auto txn = TransactionFactory::TxnBegin();
+TxnStatus TxPayment(TPCC_SCHEMA* tpcc, Mode mode){
+    auto txn = TransactionFactory::TxnBegin(mode, (uint32_t)TPCCTableType::TableNum);
     FastRandom random_generator(time(nullptr));
     int x = tpcc->RandomNumber(random_generator, 1, 100);
     int y = tpcc->RandomNumber(random_generator, 1, 100);
@@ -352,8 +352,8 @@ TxnStatus TxPayment(TPCC_SCHEMA* tpcc){
 
   return txn->Commit();
 }
-// TxnStatus TxDelivery(TPCC_SCHEMA* tpcc){
-//   auto txn = TransactionFactory::TxnBegin(Mode::COLD,(uint32_t)TPCCTableType::TableNum);
+// TxnStatus TxDelivery(TPCC_SCHEMA* tpcc, Mode mode){
+//   auto txn = TransactionFactory::TxnBegin(mode,(uint32_t)TPCCTableType::TableNum);
 //   FastRandom random_generator(time(nullptr));
 //   int warehouse_id_start_ = 1;
 //   int warehouse_id_end_ = tpcc->num_warehouse_;
@@ -460,8 +460,8 @@ TxnStatus TxPayment(TPCC_SCHEMA* tpcc){
 //   return TxnStatus::OK;
 // }
 
-TxnStatus TxOrderStatus(TPCC_SCHEMA* tpcc){
-  auto txn = TransactionFactory::TxnBegin(Mode::COLD,(uint32_t)TPCCTableType::TableNum);
+TxnStatus TxOrderStatus(TPCC_SCHEMA* tpcc, Mode mode){
+  auto txn = TransactionFactory::TxnBegin(mode,(uint32_t)TPCCTableType::TableNum);
   FastRandom random_generator(time(nullptr));
   int y = tpcc->RandomNumber(random_generator, 1, 100);
 
@@ -519,8 +519,8 @@ TxnStatus TxOrderStatus(TPCC_SCHEMA* tpcc){
   auto rc = txn->Commit();
   return rc;
 }
-TxnStatus TxStockLevel(TPCC_SCHEMA* tpcc){
-  auto txn = TransactionFactory::TxnBegin(Mode::COLD,(uint32_t)TPCCTableType::TableNum);
+TxnStatus TxStockLevel(TPCC_SCHEMA* tpcc, Mode mode){
+  auto txn = TransactionFactory::TxnBegin(mode,(uint32_t)TPCCTableType::TableNum);
   FastRandom random_generator(time(nullptr));
   int32_t threshold = tpcc->RandomNumber(random_generator, tpcc_stock_val_t::MIN_STOCK_LEVEL_THRESHOLD, tpcc_stock_val_t::MAX_STOCK_LEVEL_THRESHOLD);
 

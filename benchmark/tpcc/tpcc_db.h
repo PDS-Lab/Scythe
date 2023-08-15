@@ -490,17 +490,17 @@ public:
                 num_item_(num_item),
                 num_stock_per_warehouse_(num_stock_per_warehouse)
                 {
-        
+        bench_name_ = "TPCC";
     }
     ~TPCC_SCHEMA(){
-        delete warehouse_table_;
-        delete customer_table_;
-        delete history_table_;
-        delete new_order_table_;
-        delete order_table_;
-        delete order_line_table_;
-        delete item_table_;
-        delete stock_table_;
+        if(warehouse_table_) delete warehouse_table_;
+        if(customer_table_) delete customer_table_;
+        if(history_table_) delete history_table_;
+        if(new_order_table_) delete new_order_table_;
+        if(order_table_) delete order_table_;
+        if(order_line_table_) delete order_line_table_;
+        if(item_table_) delete item_table_;
+        if(stock_table_) delete stock_table_;
     }
     TPCCTxType* CreateWorkgenArray();
     void LoadTable();

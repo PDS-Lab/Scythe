@@ -34,7 +34,7 @@ class zipf_table_distribution
       {}
       void reset() {}
 
-      IntType operator()(std::mt19937_64& rng)
+      IntType operator()(std::mt19937& rng)
       {
          return _dist(rng);
       }
@@ -62,6 +62,11 @@ class zipf_table_distribution
          return n;
       }
 };
+
+static inline uint32_t FastRand(uint64_t* seed) {
+  *seed = *seed * 1103515245 + 12345;
+  return (uint32_t)(*seed >> 32);
+}
 
 class FastRandom {
  public:

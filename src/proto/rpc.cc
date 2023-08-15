@@ -63,7 +63,7 @@ void read_service_cb(void* _reply, void* _arg) {
       break;
     }
     default:
-      LOG_FATAL("read_service failed, %s", Status2Str(reply->rc).c_str());
+      LOG_ERROR("read_service failed, %s, obj id: %lx", Status2Str(reply->rc).c_str(),ctx->obj->id());
   }
   ctx->self->wakeup_once();
 };
