@@ -87,6 +87,7 @@ TxnStatus TOC::Read(const std::vector<TxnObjPtr> &objs) {
     auto req = rkt->gen_request<ReadReq>(sizeof(ReadReq), READ, read_service_cb, &r_ctxs[i]);
     req->obj_id = objs[i]->id();
     req->size = objs[i]->size();
+    req->table_id = objs[i]->table_id();
     req->ts = begin_ts_;
     req->mode = Mode::HOT;
     rkt->batching();

@@ -137,7 +137,7 @@ int main(int argc, char** argv){
             }
         }else if(bench == "smallbank"){
             // ./bench_runner -r s -a 192.168.1.88 -t 8 -c 8 -b smallbank
-            // ./bench_runner -r c -a 192.168.1.88 -t 4 -c 8 -b smallbank --write_ratio 70 --obj_num 100000 --exponent 0.5 --task 100000 > log/sbtest.log
+            // ./bench_runner -r c -a 192.168.1.88 -t 16 -c 8 -b smallbank --write_ratio 70 --obj_num 100000 --exponent 0.9 --task 100000 > log/sbDEBUGtest1.log
             int write_ratio = cmd.get<int>("write_ratio");
             int range = cmd.get<int>("obj_num");
             double exponent = cmd.get<double>("exponent");
@@ -149,6 +149,7 @@ int main(int argc, char** argv){
             struct timeval start_tv, end_tv;
             vector<double> latency(task_num,0);
             vector<int> retry_time(task_num,0);
+            
             pool.start();
             // for(int i=0;i<100;i++){
             //     std::cout <<i<<": "<<SmallBank_TX_NAME[(int)smallbank.workgen_arr_[i]]<<std::endl;
@@ -197,7 +198,7 @@ int main(int argc, char** argv){
                         do{
                             //mode = Mode::COLD;
                             if(rc == TxnStatus::SWITCH){
-                                //mode = Mode::HOT;
+                                mode = Mode::HOT;
                             }
                             rc = TxnFunc(&smallbank,mode);
                             cnt ++;

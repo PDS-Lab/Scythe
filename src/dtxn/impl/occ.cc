@@ -24,8 +24,6 @@ TxnStatus OCC::Read(TxnObjPtr obj) {
   if (obj->op() & TxnObj::READ) {
     return TxnStatus::OK;
   }
-  obj->set_read();
-  read_set_.push_back(obj);
   // issue RDMA read
   auto rkt = GetRocket(0);
   auto ctx = ReadReqCtx{TxnStatus::INTERNAL, obj.get(), this_coroutine::current()};
@@ -37,6 +35,10 @@ TxnStatus OCC::Read(TxnObjPtr obj) {
   req->mode = Mode::COLD;
   rkt->batching();
   this_coroutine::co_wait();
+  if(ctx.rc==TxnStatus::OK){
+    obj->set_read();
+    read_set_.push_back(obj);
+  }
   return ctx.rc;
 };
 
@@ -50,8 +52,6 @@ TxnStatus OCC::Read(const std::vector<TxnObjPtr> &objs) {
     if (obj->op() & TxnObj::READ) {
       continue;
     }
-    obj->set_read();
-    read_set_.push_back(obj);
     // issue RDMA read
     ctxs[cnt] = {TxnStatus::INTERNAL, obj.get(), this_coroutine::current()};
     auto req = rkt->gen_request<ReadReq>(sizeof(ReadReq), READ, read_service_cb, &ctxs[cnt]);
@@ -71,6 +71,10 @@ TxnStatus OCC::Read(const std::vector<TxnObjPtr> &objs) {
     }
     if (ctxs[i].rc == TxnStatus::RETRY) {
       rc = TxnStatus::RETRY;
+    }
+    if(rc==TxnStatus::OK){
+      objs[i]->set_read();
+      read_set_.push_back(objs[i]);
     }
   }
   return rc;
@@ -226,6 +230,7 @@ TxnStatus OCC::validate() {
     // sequential validate
     auto raw_buf = std::unique_ptr<char[]>(new char[sizeof(object)]);
     rkt->remote_read(raw_buf.get(), sizeof(object), obj->obj_addr, obj->rkey, validate_cb, &ctx);
+    //LOG_INFO("addr: %lx, rkey:%u",obj->obj_addr,obj->rkey);
     this_coroutine::co_wait();
     // check lock
     object *remote_obj = reinterpret_cast<object *>(raw_buf.get());
