@@ -4,11 +4,11 @@
 #include "storage/db.h"
 
 #include "util/logging.h"
-#include "config/benchmark_randomer.h"
-#include "config/types.h"
+#include "common/benchmark_randomer.h"
+#include "common/types.h"
 
 using benchmark::FastRandom;
-
+using benchmark::zipf_table_distribution;
 //商品分布均匀度
 static int g_uniform_item_dist = 0;
 //新订单中远程商品百分比
@@ -472,6 +472,12 @@ public:
     KVEngine* customer_index_table_ = nullptr;
 
     KVEngine* order_index_table_ = nullptr;
+
+    TPCCTxType workgen_arr_[100];
+
+    TPCCTxType* workload_arr_ = nullptr;
+
+    FastRandom* f_rand_ = nullptr;
     
     //是否要做三备份数据节点，暂时不需要
     //std::vector<HashStore*> primary_table_ptrs;
@@ -501,8 +507,10 @@ public:
         if(order_line_table_) delete order_line_table_;
         if(item_table_) delete item_table_;
         if(stock_table_) delete stock_table_;
+        if(workload_arr_) delete[] workload_arr_;
     }
-    TPCCTxType* CreateWorkgenArray();
+    void CreateWorkgenArray();
+    void CreateWorkLoad(int task_num);
     void LoadTable();
     void PopulateWarehouseTable(uint64_t seed);
     void PopulateDistrictTable(uint64_t seed);
@@ -510,8 +518,6 @@ public:
     void PopulateOrderNewOrderAndOrderLineTable(uint64_t seed);
     void PopulateItemTable(uint64_t seed);
     void PopulateStockTable(uint64_t seed);
-
-
      
   uint32_t GetCurrentTimeMillis() {
     // XXX(stephentu): implement a scalable GetCurrentTimeMillis()
@@ -726,7 +732,4 @@ public:
     return s_id;
   }
 
-private:
-    TPCCTxType* workgen_arr;
 };
-

@@ -2,7 +2,7 @@
 
 // #include "cmdline.h"
 // #include "coroutine_pool/coroutine_pool.h"
-// #include "config/benchmark_randomer.h"
+// #include "common/benchmark_randomer.h"
 // #include "dtxn/dtxn.h"
 // #include "proto/rpc.h"
 // #include "rrpc/rrpc.h"

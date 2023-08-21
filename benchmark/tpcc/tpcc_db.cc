@@ -2,28 +2,36 @@
 #include "dtxn/dtxn.h"
 
 using benchmark::FastRandom;
-TPCCTxType* TPCC_SCHEMA::CreateWorkgenArray() {
-    TPCCTxType* workgen_arr = new TPCCTxType[100];
+using benchmark::FastRand;
 
+void TPCC_SCHEMA::CreateWorkgenArray() {
     int i = 0, j = 0;
-
     j += FREQUENCY_NEW_ORDER;
-    for (; i < j; i++) workgen_arr[i] = TPCCTxType::kNewOrder;
+    for (; i < j; i++) workgen_arr_[i] = TPCCTxType::kNewOrder;
 
     j += FREQUENCY_PAYMENT;
-    for (; i < j; i++) workgen_arr[i] = TPCCTxType::kPayment;
+    for (; i < j; i++) workgen_arr_[i] = TPCCTxType::kPayment;
 
     j += FREQUENCY_ORDER_STATUS;
-    for (; i < j; i++) workgen_arr[i] = TPCCTxType::kOrderStatus;
+    for (; i < j; i++) workgen_arr_[i] = TPCCTxType::kOrderStatus;
 
     j += FREQUENCY_DELIVERY;
-    for (; i < j; i++) workgen_arr[i] = TPCCTxType::kDelivery;
+    for (; i < j; i++) workgen_arr_[i] = TPCCTxType::kDelivery;
 
     j += FREQUENCY_STOCK_LEVEL;
-    for (; i < j; i++) workgen_arr[i] = TPCCTxType::kStockLevel;
+    for (; i < j; i++) workgen_arr_[i] = TPCCTxType::kStockLevel;
 
     assert(i == 100 && j == 100);
-    return workgen_arr;
+}
+
+void TPCC_SCHEMA::CreateWorkLoad(int task_num){
+    workload_arr_ = new TPCCTxType[task_num];
+    uint64_t seed;
+    int cnt = 0;
+    for(cnt = 0;cnt < task_num;cnt++){
+      TPCCTxType tx_type = workgen_arr_[FastRand(&seed)%100];
+      workload_arr_[cnt] = tx_type;
+    }
 }
 
 void TPCC_SCHEMA::LoadTable(){
@@ -149,8 +157,6 @@ void TPCC_SCHEMA::PopulateDistrictTable(uint64_t seed){
   // printf("total_district_records_inserted = %d, total_district_records_examined = %d\n",
   //        total_district_records_inserted, total_district_records_examined);
 }
-
-
 
 // //no batch in this implementation
 void TPCC_SCHEMA::PopulateCustomerAndHistoryTable(uint64_t seed) {

@@ -14,7 +14,7 @@
 #include "object.h"
 #include "dtxn/takeout_lock.h"
 #include "util/lock.h"
-#include "benchmark/config/types.h"
+#include "benchmark/common/types.h"
 
 // simple KV engine used for disaggregated memroy transaction
 

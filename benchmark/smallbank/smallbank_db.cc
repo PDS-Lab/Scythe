@@ -45,18 +45,18 @@ void SmallBank::CreateWorkgenArray(int write_ratio){
 
 void SmallBank::CreateWorkLoad(int op_num, uint64_t range, double exponent){
     //should call CreateWorkGenArr first
-    workload_arr_ = new TxTypeWithOp[op_num];
+    workload_arr_ = new SmallBankTxTypeWithOp[op_num];
     uint64_t seed;
     zipf = new zipf_table_distribution<>(range,exponent);
     int cnt = 0;
     for(cnt = 0;cnt < op_num; cnt++){
-      SmallBankTxType tx_type = workgen_arr_[FastRand(&seed)%100];
+        SmallBankTxType tx_type = workgen_arr_[FastRand(&seed)%100];
         uint64_t acct_id_0=0, acct_id_1=0;
-        //gene_two_accounts(&acct_id_0,&acct_id_1);
+        get_two_accounts(&acct_id_0,&acct_id_1);
         switch(tx_type){
             case SmallBankTxType::kAmalgamate:
                 //2 accounts
-                workload_arr_[cnt] = TxTypeWithOp{
+                workload_arr_[cnt] = SmallBankTxTypeWithOp{
                     .TxType = SmallBankTxType::kAmalgamate,
                     .acct_id_0 = acct_id_0,
                     .acct_id_1 = acct_id_1,
@@ -64,7 +64,7 @@ void SmallBank::CreateWorkLoad(int op_num, uint64_t range, double exponent){
                 break;
             case SmallBankTxType::kBalance:
                 //1 account
-                workload_arr_[cnt] = TxTypeWithOp{
+                workload_arr_[cnt] = SmallBankTxTypeWithOp{
                     .TxType = SmallBankTxType::kBalance,
                     .acct_id_0 = acct_id_0,
                     .acct_id_1 = (unsigned long)-1,
@@ -72,7 +72,7 @@ void SmallBank::CreateWorkLoad(int op_num, uint64_t range, double exponent){
                 break;
             case SmallBankTxType::kDepositChecking:
                 //1 account
-                workload_arr_[cnt] = TxTypeWithOp{
+                workload_arr_[cnt] = SmallBankTxTypeWithOp{
                     .TxType = SmallBankTxType::kDepositChecking,
                     .acct_id_0 = acct_id_0,
                     .acct_id_1 = (unsigned long)-1,
@@ -80,7 +80,7 @@ void SmallBank::CreateWorkLoad(int op_num, uint64_t range, double exponent){
                 break;
             case SmallBankTxType::kSendPayment:
                 //2 accounts
-                workload_arr_[cnt] = TxTypeWithOp{
+                workload_arr_[cnt] = SmallBankTxTypeWithOp{
                     .TxType = SmallBankTxType::kSendPayment,
                     .acct_id_0 = acct_id_0,
                     .acct_id_1 = acct_id_1,
@@ -88,7 +88,7 @@ void SmallBank::CreateWorkLoad(int op_num, uint64_t range, double exponent){
                 break;
             case SmallBankTxType::kTransactSaving:
                 //1 account
-                workload_arr_[cnt] = TxTypeWithOp{
+                workload_arr_[cnt] = SmallBankTxTypeWithOp{
                     .TxType = SmallBankTxType::kTransactSaving,
                     .acct_id_0 = acct_id_0,
                     .acct_id_1 = (unsigned long)-1,
@@ -96,7 +96,7 @@ void SmallBank::CreateWorkLoad(int op_num, uint64_t range, double exponent){
                 break;
             case SmallBankTxType::kWriteCheck:
                 //1 account
-                workload_arr_[cnt] = TxTypeWithOp{
+                workload_arr_[cnt] = SmallBankTxTypeWithOp{
                     .TxType = SmallBankTxType::kWriteCheck,
                     .acct_id_0 = acct_id_0,
                     .acct_id_1 = (unsigned long)-1,

@@ -11,7 +11,8 @@ Smallbank根据FORD修改而来
 #include "storage/db.h"
 
 #include "util/logging.h"
-#include "config/benchmark_randomer.h"
+#include "common/benchmark_randomer.h"
+#include "common/types.h"
 
 /* STORED PROCEDURE EXECUTION FREQUENCIES (0-100) */
 #define FREQUENCY_AMALGAMATE 15
@@ -76,7 +77,7 @@ enum class SmallBankTxType : int {
   kWriteCheck,
 };
 
-struct TxTypeWithOp{
+struct SmallBankTxTypeWithOp{
   SmallBankTxType TxType;
   uint64_t acct_id_0;
   uint64_t acct_id_1;
@@ -92,15 +93,7 @@ enum class SmallBankTableType : uint64_t {
   TableNum
 };
 
-struct phased_latency{
-  Mode mode;
-  struct timeval exe_start_tv;    struct timeval exe_end_tv;    double exe_latency;
-  struct timeval lock_start_tv;   struct timeval lock_end_tv;   double lock_latency;
-  struct timeval vali_start_tv;   struct timeval vali_end_tv;   double vali_latency;
-  struct timeval write_start_tv;  struct timeval write_end_tv;  double write_latency;
-  struct timeval commit_start_tv; struct timeval commit_end_tv; double commit_latency;
-  struct timeval txn_start_tv;    struct timeval txn_end_tv;    double txn_latency;
-};
+
 
 class SmallBank{
 public:
@@ -108,7 +101,7 @@ public:
 
     uint32_t total_thread_num_;
 
-    uint32_t num_accounts_global_=100000;
+    uint32_t num_accounts_global_;
 
     KVEngine* savings_table_=nullptr;
 
@@ -116,11 +109,11 @@ public:
 
     SmallBankTxType workgen_arr_[100];
 
-    TxTypeWithOp* workload_arr_=nullptr;
+    SmallBankTxTypeWithOp* workload_arr_=nullptr;
 
     zipf_table_distribution<>* zipf = nullptr;
 
-    SmallBank(){
+    SmallBank(int acct_num=100000):num_accounts_global_(acct_num){
         bench_name_ = "SmallBank";
         // num_accounts_global = conf.get("num_accounts").get_uint64();
         // num_hot_global = conf.get("num_hot_accounts").get_uint64();

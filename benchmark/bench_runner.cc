@@ -10,10 +10,27 @@ using std::vector;
 using std::cout;
 using std::endl;
 using benchmark::zipf_table_distribution;
-thread_local zipf_table_distribution<>* zipf;
+thread_local zipf_table_distribution<>* zipf=nullptr;
+thread_local FastRandom* f_rand=nullptr;
 
-// ./bench_runner -r s -a 192.168.1.88 -t 8 -c 8 -b tpcc
-// ./bench_runner -r c -a 192.168.1.88 -t 2 -c 8 -b tpcc
+auto cmp_txn = [](const PhasedLatency& a,const PhasedLatency& b){
+    return a.txn_latency < b.txn_latency;
+};
+auto cmp_exe = [](const PhasedLatency& a,const PhasedLatency& b){
+    return a.exe_latency < b.exe_latency;
+};
+auto cmp_lock = [](const PhasedLatency& a,const PhasedLatency& b){
+    return a.lock_latency < b.lock_latency;
+};
+auto cmp_vali = [](const PhasedLatency& a,const PhasedLatency& b){
+    return a.vali_latency < b.vali_latency;
+};
+auto cmp_write = [](const PhasedLatency& a,const PhasedLatency& b){
+    return a.write_latency < b.write_latency;
+};
+auto cmp_commit = [](const PhasedLatency& a,const PhasedLatency& b){
+    return a.commit_latency < b.commit_latency;
+};
 
 int main(int argc, char** argv){
     cmdline::parser cmd;
@@ -32,6 +49,7 @@ int main(int argc, char** argv){
     if(server){
         string ip = cmd.get<string>("ip");
         int thread_num = cmd.get<int>("thread");
+        int obj_num = cmd.get<int>("obj_num");
 
         RrpcRte::Options rte_opt;
         rte_opt.tcp_port_ = 10456;
@@ -50,39 +68,52 @@ int main(int argc, char** argv){
             tpcc = new TPCC_SCHEMA();
             tpcc->LoadTable();
             
-            auto db = dbs[(size_t)TPCCTableType::kWarehouseTable];
-            int32_t warehouse_id = 1;
-            tpcc_warehouse_key_t ware_key;
-            ware_key.w_id = warehouse_id;
+            //check load
+            auto db = dbs[(size_t)TPCCTableType::kDistrictTable];
+            for(uint32_t w_id = 1; w_id <= tpcc->num_warehouse_; w_id++){
+                for(uint32_t d_id = 1; d_id <= tpcc->num_district_per_warehouse_; d_id++){
+                    tpcc_district_key_t dist_key;
+                    dist_key.d_id = tpcc->MakeDistrictKey(w_id, d_id);
+                    ReadResult res;
+                    res.buf_size = sizeof(tpcc_district_val_t);
+                    res.buf = (void*)new(tpcc_district_val_t);
+                    db->get(dist_key.item_key,res,TSO::get_ts(),false);
+                    tpcc_district_val_t* val = (tpcc_district_val_t*)res.buf;
+                    LOG_ASSERT(strcmp(val->d_zip,"123456789")==0,"wrong zip:%s",val->d_zip);
+                }
+            }
+            LOG_INFO("check ok");
+            int32_t district_id = 1;
+            tpcc_district_key_t dist_key;
+            dist_key.d_id = tpcc->MakeDistrictKey(1,district_id);
             ReadResult res;
-            res.buf_size = sizeof(tpcc_warehouse_val_t);
-            res.buf = (void*)new(tpcc_warehouse_val_t);
-            db->get(ware_key.item_key,res,TSO::get_ts(),false);
-            tpcc_warehouse_val_t* val = (tpcc_warehouse_val_t*)res.buf;
-            LOG_INFO("%s",val->w_zip);
+            res.buf_size = sizeof(tpcc_district_val_t);
+            res.buf = (void*)new(tpcc_district_val_t);
+            db->get(dist_key.item_key,res,TSO::get_ts(),false);
+            tpcc_district_val_t* val = (tpcc_district_val_t*)res.buf;
+            LOG_INFO("%s",val->d_zip);
             
         }else if(bench == "smallbank"){
             dbs.resize((size_t)SmallBankTableType::TableNum);
             global_db = new KVEngine();
             dbs[0] = global_db;
-            smallbank = new SmallBank();
+            smallbank = new SmallBank(obj_num);
             smallbank->LoadTable();
             LOG_INFO("Loadtable finish");
 
+            //check load
             auto db = dbs[(size_t)SmallBankTableType::kSavingsTable];
             int32_t acct_id = 6;
             smallbank_savings_key_t saving_key;
             smallbank_checking_key_t checking_key;
             saving_key.item_key = acct_id;
             checking_key.item_key = acct_id;
-
             ReadResult res;
             res.buf_size = sizeof(smallbank_savings_val_t);
             res.buf = (void*)new(smallbank_savings_val_t);
             db->get(saving_key.item_key,res,TSO::get_ts(),false);
             smallbank_savings_val_t* saving_val = (smallbank_savings_val_t*)res.buf;
             LOG_INFO("saving %u",saving_val->magic);
-
             db = dbs[(size_t)SmallBankTableType::kCheckingTable];
             res.buf_size = sizeof(smallbank_checking_val_t);
             res.buf = (void *)new (smallbank_checking_val_t);
@@ -115,25 +146,70 @@ int main(int argc, char** argv){
 
         InitMemPool(rte.get_rdma_buffer(), rte.get_buffer_size());
         if(bench == "tpcc"){
-            CoroutinePool pool(thread_num, cort_per_thread);
+            // ./bench_runner -r s -a 192.168.1.88 -t 8 -c 8 -b tpcc
+            // ./bench_runner -r c -a 192.168.1.88 -t 2 -c 8 -b tpcc --task 1000
             TPCC_SCHEMA tpcc;
+            tpcc.CreateWorkgenArray();
+            tpcc.CreateWorkLoad(task_num);
+            CoroutinePool pool(thread_num, cort_per_thread);
+            struct timeval start_tv, end_tv;
+            vector<PhasedLatency> latency(task_num);
+            vector<int> retry_time(task_num,0);
             pool.start();
             {
                 WaitGroup wg(task_num);
-                pool.enqueue([&wg,task_num,&tpcc](){
-                    for(int i=0;i<task_num;i++){
-                        TxnStatus rc=TxnStatus::OK;
+                gettimeofday(&start_tv,nullptr);
+                for(int i=0;i<task_num;i++){
+                    auto op = tpcc.workload_arr_[i];
+                    pool.enqueue([&wg,&tpcc,&op,&latency,&retry_time,i](){
+                        if(f_rand==nullptr){
+                            f_rand = new FastRandom(time(nullptr) + this_coroutine::current()->id() * 114514);
+                        }
+                        tpcc.f_rand_ = f_rand;
+                        TxnStatus rc = TxnStatus::OK;
                         Mode mode = Mode::COLD;
-                        do{
+                        std::function<TxnStatus(TPCC_SCHEMA*,Mode,PhasedLatency*)> TxnFunc;
+                        switch (op)
+                        {
+                        case TPCCTxType::kNewOrder:
+                            TxnFunc = TxNewOrder; break;
+                        case TPCCTxType::kDelivery:
+                            TxnFunc = TxDelivery; break;
+                        case TPCCTxType::kOrderStatus:
+                            TxnFunc = TxOrderStatus;break;
+                        case TPCCTxType::kPayment:
+                            TxnFunc = TxPayment;break;
+                        case TPCCTxType::kStockLevel:
+                            TxnFunc = TxStockLevel;break;
+                        default:
+                            LOG_FATAL("Unexpected txn type for tpcc, %s",TPCC_TX_NAME[(int)op].c_str() );  
+                            break;
+                        }
+                        int cnt = 0;
+                        gettimeofday(&latency[i].txn_start_tv,nullptr);
+                        //为了测试TOC热度切换，将测试指标的new order事务进行不断重试
+                        if(op == TPCCTxType::kNewOrder){
                             mode = Mode::COLD;
-                            if(rc == TxnStatus::SWITCH){
-                                mode = Mode::HOT;
-                            }
-                            rc = TxNewOrder(&tpcc,mode);
-                        }while(rc!=TxnStatus::OK);
-                    }
-                });
+                            do{
+                                if(rc == TxnStatus::SWITCH){
+                                    mode = Mode::HOT;
+                                }
+                                rc = TxnFunc(&tpcc,mode,&latency[i]);
+                                cnt ++;
+                            }while(rc!=TxnStatus::OK);
+                        }
+                        else {
+                            mode = Mode::COLD;
+                            rc = TxnFunc(&tpcc,mode,&latency[i]);
+                        }
+                        wg.Done();
+                    });
+                }
                 wg.Wait();
+                gettimeofday(&end_tv,nullptr);
+                uint64_t tot = ((end_tv.tv_sec - start_tv.tv_sec) * 1000000 + end_tv.tv_usec - start_tv.tv_usec);
+                printf("============================ Throughput:%lf MOPS =========================\n", 
+                task_num *FREQUENCY_NEW_ORDER /100 * 1.0 / tot);
             }
         }else if(bench == "smallbank"){
             // ./bench_runner -r s -a 192.168.1.88 -t 8 -c 8 -b smallbank
@@ -142,24 +218,15 @@ int main(int argc, char** argv){
             int range = cmd.get<int>("obj_num");
             double exponent = cmd.get<double>("exponent");
             
-            SmallBank smallbank;
+            SmallBank smallbank(range);
             smallbank.CreateWorkgenArray(write_ratio);
             smallbank.CreateWorkLoad(task_num,range,exponent);
             CoroutinePool pool(thread_num,cort_per_thread);
             struct timeval start_tv, end_tv;
-            vector<double> latency(task_num,0);
+            vector<PhasedLatency> latency(task_num);
             vector<int> retry_time(task_num,0);
             
             pool.start();
-            // for(int i=0;i<100;i++){
-            //     std::cout <<i<<": "<<SmallBank_TX_NAME[(int)smallbank.workgen_arr_[i]]<<std::endl;
-            // }
-            // std::cout<<"workload"<<std::endl;
-            // for(int i=0;i<task_num;i++){
-            //     std::cout <<i<<": "<<SmallBank_TX_NAME[(int)smallbank.workload_arr_[i].TxType];
-            //     if(!(i%5)) std::cout << std::endl;
-            // }
-            // std::cout << std::endl;
             {
                 WaitGroup wg(task_num);
                 gettimeofday(&start_tv,nullptr);
@@ -174,8 +241,7 @@ int main(int argc, char** argv){
                         smallbank.zipf = zipf;
                         TxnStatus rc = TxnStatus::OK;
                         Mode mode = Mode::COLD;
-                        std::function<TxnStatus(SmallBank*,Mode)> TxnFunc;
-                        struct timeval txn_start_tv, txn_end_tv;
+                        std::function<TxnStatus(SmallBank*,Mode,PhasedLatency*)> TxnFunc;
                         switch(op.TxType){
                             case SmallBankTxType::kAmalgamate:
                                 TxnFunc = TxAmalgamate;break;
@@ -190,22 +256,27 @@ int main(int argc, char** argv){
                             case SmallBankTxType::kWriteCheck:
                                 TxnFunc = TxWriteCheck;break;
                             default:
-                                LOG_FATAL("Unexpected txn type, %d",(int)op.TxType);
+                                LOG_FATAL("Unexpected txn type for smallbank, %d",(int)op.TxType);
                                 break;
                         }
                         int cnt = 0;
-                        gettimeofday(&txn_start_tv,nullptr);
+                        gettimeofday(&latency[i].txn_start_tv,nullptr);
                         do{
                             //mode = Mode::COLD;
                             if(rc == TxnStatus::SWITCH){
                                 mode = Mode::HOT;
                             }
-                            rc = TxnFunc(&smallbank,mode);
+                            rc = TxnFunc(&smallbank,mode,&latency[i]);
                             cnt ++;
                         }while(rc!=TxnStatus::OK);
-                        gettimeofday(&txn_end_tv,nullptr);
-                        uint64_t txn_tot = ((txn_end_tv.tv_sec - txn_start_tv.tv_sec) * 1000000 + txn_end_tv.tv_usec - txn_start_tv.tv_usec);
-                        latency[i] = txn_tot;
+                        gettimeofday(&latency[i].txn_end_tv,nullptr);
+                        latency[i].mode = mode;
+                        latency[i].txn_latency = ((latency[i].txn_end_tv.tv_sec - latency[i].txn_start_tv.tv_sec) * 1000000 + latency[i].txn_end_tv.tv_usec - latency[i].txn_start_tv.tv_usec);
+                        latency[i].exe_latency = ((latency[i].exe_end_tv.tv_sec - latency[i].exe_start_tv.tv_sec) * 1000000 + latency[i].exe_end_tv.tv_usec - latency[i].exe_start_tv.tv_usec);
+                        latency[i].lock_latency = ((latency[i].lock_end_tv.tv_sec - latency[i].lock_start_tv.tv_sec) * 1000000 + latency[i].lock_end_tv.tv_usec - latency[i].lock_start_tv.tv_usec);
+                        if(mode == Mode::COLD)latency[i].vali_latency = ((latency[i].vali_end_tv.tv_sec - latency[i].vali_start_tv.tv_sec) * 1000000 + latency[i].vali_end_tv.tv_usec - latency[i].vali_start_tv.tv_usec);
+                        latency[i].write_latency = ((latency[i].write_end_tv.tv_sec - latency[i].write_start_tv.tv_sec) * 1000000 + latency[i].write_end_tv.tv_usec - latency[i].write_start_tv.tv_usec);
+                        latency[i].commit_latency = ((latency[i].commit_end_tv.tv_sec - latency[i].commit_start_tv.tv_sec) * 1000000 + latency[i].commit_end_tv.tv_usec - latency[i].commit_start_tv.tv_usec);
                         retry_time[i] = cnt;
                         wg.Done();
                     });
@@ -214,10 +285,24 @@ int main(int argc, char** argv){
                 gettimeofday(&end_tv,nullptr);
                 uint64_t tot = ((end_tv.tv_sec - start_tv.tv_sec) * 1000000 + end_tv.tv_usec - start_tv.tv_usec);
                 printf("============================ Throughput:%lf MOPS =========================\n", 
-                 task_num * 1.0 / tot);
-                std::sort(latency.begin(),latency.end());
-                printf("p50 latency:%lf, p99 latency:%lf, p999 latency:%lf\n",latency[(latency.size())/2-1],latency[(latency.size())*99/100-1],latency[(latency.size())*999/1000-1]);
+                task_num * 1.0 / tot);
+                //phased perf
 
+                
+                std::sort(latency.begin(),latency.end(),cmp_txn);
+                printf("p50 latency:%lf, p99 latency:%lf, p999 latency:%lf\n",latency[(latency.size())/2-1].txn_latency,latency[(latency.size())*99/100-1].txn_latency,latency[(latency.size())*999/1000-1].txn_latency);
+
+                vector<PhasedLatency> occ_latency;
+                vector<PhasedLatency> toc_latency;
+                for(auto lat : latency){
+                    if(lat.mode == Mode::COLD){
+                        occ_latency.push_back(lat);
+                    }else{
+                        toc_latency.push_back(lat);
+                    }
+                }
+                printf("============================ OCC:%zu =========================\n",occ_latency.size());
+                printf("============================ TOC:%zu =========================\n",toc_latency.size());
                 // WaitGroup wg(1);
                 // pool.enqueue([&wg](){
                 //     SmallBank sb;
