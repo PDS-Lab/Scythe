@@ -183,11 +183,11 @@ TxnStatus OCC::lock() {
   }
 
   this_coroutine::co_wait(sz);
-  for (int i = 0; i < sz; i++) {
-    LOG_INFO("[%d] [obj %lx] lock info {lower:%lu, upper:%lu, ts:%lu}", this_coroutine::current()->id(),
-             ctxs[i].obj->id(), ctxs[i].obj->lock_proxy->tl.lower, ctxs[i].obj->lock_proxy->tl.upper,
-             ctxs[i].obj->lock_proxy->tl.queued_ts);
-  }
+  // for (int i = 0; i < sz; i++) {
+  //   LOG_INFO("[%d] [obj %lx] lock info {lower:%lu, upper:%lu, ts:%lu}", this_coroutine::current()->id(),
+  //            ctxs[i].obj->id(), ctxs[i].obj->lock_proxy->tl.lower, ctxs[i].obj->lock_proxy->tl.upper,
+  //            ctxs[i].obj->lock_proxy->tl.queued_ts);
+  // }
   // handle lock
   bool early_abort = false;
   bool switch_mode = false;

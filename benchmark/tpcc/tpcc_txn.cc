@@ -16,7 +16,7 @@ TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc, Mode mode, PhasedLatency* phased_lat){
   },
   */
     auto txn = TransactionFactory::TxnBegin(mode, (uint32_t)TPCCTableType::TableNum);
-    FastRandom random_generator = *(tpcc->f_rand_);
+    FastRandom random_generator = *(tpcc->f_rand_[this_coroutine::current()->id()%8]);
     
     int warehouse_id_start_ = 1;
     int warehouse_id_end_ = tpcc->num_warehouse_;
@@ -115,29 +115,6 @@ TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc, Mode mode, PhasedLatency* phased_lat){
       txn->Rollback();
       return rc;
     }
-    //check
-    {
-        auto ware_val = ware_obj->get_as<tpcc_warehouse_val_t>();
-        std::string check(ware_val->w_zip);
-        if (check != tpcc_zip_magic) {
-            LOG_FATAL("[FATAL] Read warehouse unmatch, check:%s, magic:%s",check.c_str(),tpcc_zip_magic.c_str());
-        }
-        //else LOG_DEBUG("Read warehouse succeeded");
-
-        auto cust_val = cust_obj->get_as<tpcc_customer_val_t>();
-        // c_since never be 0
-        if (cust_val->c_since == 0) {
-            LOG_FATAL("[FATAL] Read customer unmatch, check:%s, magic:%s",check.c_str(),tpcc_zip_magic.c_str());
-        }
-        //else LOG_DEBUG("Read customer succeeded");
-
-        auto dist_val = dist_obj->get_as<tpcc_district_val_t>();
-        check = std::string(dist_val->d_zip);
-        if (check != tpcc_zip_magic) {
-            LOG_FATAL("[FATAL] Read district unmatch, check:%s, magic:%s",check.c_str(),tpcc_zip_magic.c_str());
-        }
-        //else LOG_DEBUG("Read district succeeded");
-    }
     
     //incrementNextOrderId
     auto dist_val = dist_obj->get_as<tpcc_district_val_t>();
@@ -211,16 +188,6 @@ TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc, Mode mode, PhasedLatency* phased_lat){
 
       tpcc_item_val_t* item_val = item_obj->get_as<tpcc_item_val_t>();
       tpcc_stock_val_t* stock_val = stock_obj->get_as<tpcc_stock_val_t>();
-      //check
-      {
-        if (item_val->debug_magic != tpcc_add_magic) {
-          LOG_FATAL("[FATAL] Read item unmatch, check:%lu, magic:%lu",item_val->debug_magic,tpcc_add_magic);
-        }
-        
-        if (stock_val->debug_magic != tpcc_add_magic) {
-          LOG_FATAL("[FATAL] Read stock unmatch, check:%lu, magic:%lu",stock_val->debug_magic,tpcc_add_magic);
-        }
-      }
       
       //else LOG_DEBUG("read stock succeeded");
 
@@ -316,7 +283,7 @@ TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc, Mode mode, PhasedLatency* phased_lat){
 }
 TxnStatus TxPayment(TPCC_SCHEMA* tpcc, Mode mode, PhasedLatency* phased_lat){
     auto txn = TransactionFactory::TxnBegin(mode, (uint32_t)TPCCTableType::TableNum);
-    FastRandom random_generator = *(tpcc->f_rand_);
+    FastRandom random_generator = *(tpcc->f_rand_[this_coroutine::current()->id()%8]);
     int x = tpcc->RandomNumber(random_generator, 1, 100);
     int y = tpcc->RandomNumber(random_generator, 1, 100);
     
@@ -449,12 +416,15 @@ TxnStatus TxPayment(TPCC_SCHEMA* tpcc, Mode mode, PhasedLatency* phased_lat){
 
 TxnStatus TxDelivery(TPCC_SCHEMA* tpcc, Mode mode, PhasedLatency* phased_lat){
   auto txn = TransactionFactory::TxnBegin(mode,(uint32_t)TPCCTableType::TableNum);
-  FastRandom random_generator = *(tpcc->f_rand_);
+  FastRandom random_generator = *(tpcc->f_rand_[this_coroutine::current()->id()%8]);
   int warehouse_id_start_ = 1;
   int warehouse_id_end_ = tpcc->num_warehouse_;
   const uint32_t warehouse_id = tpcc->PickWarehouseId(random_generator, warehouse_id_start_, warehouse_id_end_);
   const int o_carrier_id = tpcc->RandomNumber(random_generator, tpcc_order_val_t::MIN_CARRIER_ID, tpcc_order_val_t::MAX_CARRIER_ID);
   const uint32_t current_ts = tpcc->GetCurrentTimeMillis();
+  if(phased_lat){
+      gettimeofday(&(phased_lat->exe_start_tv),nullptr);
+  }
   for (int d_id = 1; d_id <= tpcc->num_district_per_warehouse_; d_id++) {
     // FIXME: select the lowest NO_O_ID with matching NO_W_ID (equals W_ID) and NO_D_ID (equals D_ID) in the NEW-ORDER table
     int min_o_id = tpcc->num_customer_per_district_ * tpcc_new_order_val_t::SCALE_CONSTANT_BETWEEN_NEWORDER_ORDER + 1;
@@ -558,7 +528,7 @@ TxnStatus TxDelivery(TPCC_SCHEMA* tpcc, Mode mode, PhasedLatency* phased_lat){
 //read only txn
 TxnStatus TxOrderStatus(TPCC_SCHEMA* tpcc, Mode mode, PhasedLatency* phased_lat){
   auto txn = TransactionFactory::TxnBegin(mode,(uint32_t)TPCCTableType::TableNum);
-  FastRandom random_generator = *(tpcc->f_rand_);
+  FastRandom random_generator = *(tpcc->f_rand_[this_coroutine::current()->id()%8]);
   int y = tpcc->RandomNumber(random_generator, 1, 100);
 
   int warehouse_id_start_ = 1;
@@ -624,7 +594,7 @@ TxnStatus TxOrderStatus(TPCC_SCHEMA* tpcc, Mode mode, PhasedLatency* phased_lat)
 
 TxnStatus TxStockLevel(TPCC_SCHEMA* tpcc, Mode mode, PhasedLatency* phased_lat){
   auto txn = TransactionFactory::TxnBegin(mode,(uint32_t)TPCCTableType::TableNum);
-  FastRandom random_generator = *(tpcc->f_rand_);
+  FastRandom random_generator = *(tpcc->f_rand_[this_coroutine::current()->id()%8]);
   int32_t threshold = tpcc->RandomNumber(random_generator, tpcc_stock_val_t::MIN_STOCK_LEVEL_THRESHOLD, tpcc_stock_val_t::MAX_STOCK_LEVEL_THRESHOLD);
 
   int warehouse_id_start_ = 1;

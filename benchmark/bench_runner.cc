@@ -11,7 +11,7 @@ using std::cout;
 using std::endl;
 using benchmark::zipf_table_distribution;
 thread_local zipf_table_distribution<>* zipf=nullptr;
-thread_local FastRandom* f_rand=nullptr;
+thread_local FastRandom** f_rand=nullptr;
 
 auto cmp_txn = [](const PhasedLatency& a,const PhasedLatency& b){
     return a.txn_latency < b.txn_latency;
@@ -147,7 +147,7 @@ int main(int argc, char** argv){
         InitMemPool(rte.get_rdma_buffer(), rte.get_buffer_size());
         if(bench == "tpcc"){
             // ./bench_runner -r s -a 192.168.1.88 -t 8 -c 8 -b tpcc
-            // ./bench_runner -r c -a 192.168.1.88 -t 2 -c 8 -b tpcc --task 1000
+            // ./bench_runner -r c -a 192.168.1.88 -t 2 -c 8 -b tpcc --task 100000
             TPCC_SCHEMA tpcc;
             tpcc.CreateWorkgenArray();
             tpcc.CreateWorkLoad(task_num);
@@ -160,15 +160,18 @@ int main(int argc, char** argv){
                 WaitGroup wg(task_num);
                 gettimeofday(&start_tv,nullptr);
                 for(int i=0;i<task_num;i++){
-                    auto op = tpcc.workload_arr_[i];
-                    pool.enqueue([&wg,&tpcc,&op,&latency,&retry_time,i](){
+                    pool.enqueue([&wg,&tpcc,&latency,&retry_time,i](){
                         if(f_rand==nullptr){
-                            f_rand = new FastRandom(time(nullptr) + this_coroutine::current()->id() * 114514);
-                        }
+                            f_rand = new FastRandom*[8];
+                            for(int i=0;i<8;i++){
+                                f_rand[i] = new FastRandom((time(nullptr) + this_coroutine::current()->id() * 114514));
+                            }
+                         }
                         tpcc.f_rand_ = f_rand;
                         TxnStatus rc = TxnStatus::OK;
                         Mode mode = Mode::COLD;
                         std::function<TxnStatus(TPCC_SCHEMA*,Mode,PhasedLatency*)> TxnFunc;
+                        TPCCTxType op = tpcc.workload_arr_[i];
                         switch (op)
                         {
                         case TPCCTxType::kNewOrder:
@@ -194,14 +197,24 @@ int main(int argc, char** argv){
                                 if(rc == TxnStatus::SWITCH){
                                     mode = Mode::HOT;
                                 }
+                                gettimeofday(&latency[i].txn_start_tv,nullptr);
+
+#define TEST_PHASED_LATENCY
+#ifdef TEST_PHASED_LATENCY
                                 rc = TxnFunc(&tpcc,mode,&latency[i]);
+#else
+                                rc = TxnFunc(&tpcc,mode,nullptr);
+#endif
+                                gettimeofday(&latency[i].txn_end_tv,nullptr);
                                 cnt ++;
                             }while(rc!=TxnStatus::OK);
                         }
                         else {
                             mode = Mode::COLD;
-                            rc = TxnFunc(&tpcc,mode,&latency[i]);
+                            rc = TxnFunc(&tpcc,mode,nullptr);
                         }
+                        latency[i].mode = mode;
+                        retry_time[i] = cnt;
                         wg.Done();
                     });
                 }
@@ -210,10 +223,61 @@ int main(int argc, char** argv){
                 uint64_t tot = ((end_tv.tv_sec - start_tv.tv_sec) * 1000000 + end_tv.tv_usec - start_tv.tv_usec);
                 printf("============================ Throughput:%lf MOPS =========================\n", 
                 task_num *FREQUENCY_NEW_ORDER /100 * 1.0 / tot);
+
+                for(int i=0;i<latency.size();i++){
+                    if(tpcc.workload_arr_[i] == TPCCTxType::kNewOrder){
+                        latency[i].txn_latency = ((latency[i].txn_end_tv.tv_sec - latency[i].txn_start_tv.tv_sec) * 1000000 + latency[i].txn_end_tv.tv_usec - latency[i].txn_start_tv.tv_usec);
+                        latency[i].exe_latency = ((latency[i].exe_end_tv.tv_sec - latency[i].exe_start_tv.tv_sec) * 1000000 + latency[i].exe_end_tv.tv_usec - latency[i].exe_start_tv.tv_usec);
+                        latency[i].lock_latency = ((latency[i].lock_end_tv.tv_sec - latency[i].lock_start_tv.tv_sec) * 1000000 + latency[i].lock_end_tv.tv_usec - latency[i].lock_start_tv.tv_usec);
+                        if(latency[i].mode == Mode::COLD)latency[i].vali_latency = ((latency[i].vali_end_tv.tv_sec - latency[i].vali_start_tv.tv_sec) * 1000000 + latency[i].vali_end_tv.tv_usec - latency[i].vali_start_tv.tv_usec);
+                        latency[i].write_latency = ((latency[i].write_end_tv.tv_sec - latency[i].write_start_tv.tv_sec) * 1000000 + latency[i].write_end_tv.tv_usec - latency[i].write_start_tv.tv_usec);
+                        latency[i].commit_latency = ((latency[i].commit_end_tv.tv_sec - latency[i].commit_start_tv.tv_sec) * 1000000 + latency[i].commit_end_tv.tv_usec - latency[i].commit_start_tv.tv_usec);
+                    }
+                }
+                vector<int> neworder_retrytime;
+                vector<PhasedLatency> neworder_latency;
+                vector<PhasedLatency> occ_latency;
+                vector<PhasedLatency> toc_latency;
+                for(int i=0;i<task_num;i++){
+                    if(tpcc.workload_arr_[i] == TPCCTxType::kNewOrder){
+                        if(latency[i].mode == Mode::COLD){
+                            occ_latency.emplace_back(latency[i]);
+                        }else{
+                            toc_latency.emplace_back(latency[i]);
+                        }
+                        neworder_latency.emplace_back(latency[i]);
+                        neworder_retrytime.emplace_back(retry_time[i]);
+                    }
+                }
+                std::sort(neworder_latency.begin(),neworder_latency.end(),cmp_txn);
+                printf("p50 latency:%lf, p99 latency:%lf, p999 latency:%lf\n",neworder_latency[(neworder_latency.size())/2-1].txn_latency,neworder_latency[(neworder_latency.size())*99/100-1].txn_latency,neworder_latency[(neworder_latency.size())*999/1000-1].txn_latency);
+                printf("============================ OCC:%zu =========================\n",occ_latency.size());
+                
+                printf("============================ TOC:%zu =========================\n",toc_latency.size());
+
+                std::sort(neworder_retrytime.begin(),neworder_retrytime.end());
+                int sum = std::accumulate(neworder_retrytime.begin(),neworder_retrytime.end(),0);
+                printf("retry time: mid-val:%d, avg:%f\n",neworder_retrytime[neworder_retrytime.size()/2-1],sum*1.0/neworder_retrytime.size());
+#ifdef TEST_PHASED_LATENCY
+                std::sort(neworder_latency.begin(),neworder_latency.end(),cmp_exe);
+                printf("exe: p50 latency:%lf, p99 latency:%lf, p999 latency:%lf\n",neworder_latency[(neworder_latency.size())/2-1].exe_latency,neworder_latency[(neworder_latency.size())*99/100-1].exe_latency,neworder_latency[(neworder_latency.size())*999/1000-1].exe_latency);
+
+                std::sort(neworder_latency.begin(),neworder_latency.end(),cmp_lock);
+                printf("lock: p50 latency:%lf, p99 latency:%lf, p999 latency:%lf\n",neworder_latency[(neworder_latency.size())/2-1].lock_latency,neworder_latency[(neworder_latency.size())*99/100-1].lock_latency,neworder_latency[(neworder_latency.size())*999/1000-1].lock_latency);
+
+                std::sort(neworder_latency.begin(),neworder_latency.end(),cmp_write);
+                printf("write: p50 latency:%lf, p99 latency:%lf, p999 latency:%lf\n",neworder_latency[(neworder_latency.size())/2-1].write_latency,neworder_latency[(neworder_latency.size())*99/100-1].write_latency,neworder_latency[(neworder_latency.size())*999/1000-1].write_latency);
+
+                std::sort(neworder_latency.begin(),neworder_latency.end(),cmp_commit);
+                printf("commit: p50 latency:%lf, p99 latency:%lf, p999 latency:%lf\n",neworder_latency[(neworder_latency.size())/2-1].commit_latency,neworder_latency[(neworder_latency.size())*99/100-1].commit_latency,neworder_latency[(neworder_latency.size())*999/1000-1].commit_latency);
+
+                std::sort(occ_latency.begin(),occ_latency.end(),cmp_vali);
+                printf("vali: p50 latency:%lf, p99 latency:%lf, p999 latency:%lf\n",occ_latency[(occ_latency.size())/2-1].vali_latency,occ_latency[(occ_latency.size())*99/100-1].vali_latency,occ_latency[(occ_latency.size())*999/1000-1].vali_latency);
+#endif                
             }
         }else if(bench == "smallbank"){
             // ./bench_runner -r s -a 192.168.1.88 -t 8 -c 8 -b smallbank
-            // ./bench_runner -r c -a 192.168.1.88 -t 16 -c 8 -b smallbank --write_ratio 70 --obj_num 100000 --exponent 0.9 --task 100000 > log/sbDEBUGtest1.log
+            // ./bench_runner -r c -a 192.168.1.88 -t 16 -c 8 -b smallbank --write_ratio 100 --obj_num 100000 --exponent 0.9 --task 100000 > log/sbDEBUGtest1.log
             int write_ratio = cmd.get<int>("write_ratio");
             int range = cmd.get<int>("obj_num");
             double exponent = cmd.get<double>("exponent");
@@ -231,13 +295,13 @@ int main(int argc, char** argv){
                 WaitGroup wg(task_num);
                 gettimeofday(&start_tv,nullptr);
                 for(int i=0;i<task_num;i++){
-                    auto op = smallbank.workload_arr_[i];
-                    pool.enqueue([&wg,&smallbank,&op,&latency,&retry_time,i,range,exponent](){
+                    pool.enqueue([&wg,&smallbank,&latency,&retry_time,i,range,exponent](){
                         if(zipf == nullptr){
                             //Every thread should init its own zipf first.
                             LOG_DEBUG("zipf==nullptr");
                             zipf = new zipf_table_distribution<>(range,exponent);
                         }
+                        auto op = smallbank.workload_arr_[i];
                         smallbank.zipf = zipf;
                         TxnStatus rc = TxnStatus::OK;
                         Mode mode = Mode::COLD;
@@ -271,12 +335,6 @@ int main(int argc, char** argv){
                         }while(rc!=TxnStatus::OK);
                         gettimeofday(&latency[i].txn_end_tv,nullptr);
                         latency[i].mode = mode;
-                        latency[i].txn_latency = ((latency[i].txn_end_tv.tv_sec - latency[i].txn_start_tv.tv_sec) * 1000000 + latency[i].txn_end_tv.tv_usec - latency[i].txn_start_tv.tv_usec);
-                        latency[i].exe_latency = ((latency[i].exe_end_tv.tv_sec - latency[i].exe_start_tv.tv_sec) * 1000000 + latency[i].exe_end_tv.tv_usec - latency[i].exe_start_tv.tv_usec);
-                        latency[i].lock_latency = ((latency[i].lock_end_tv.tv_sec - latency[i].lock_start_tv.tv_sec) * 1000000 + latency[i].lock_end_tv.tv_usec - latency[i].lock_start_tv.tv_usec);
-                        if(mode == Mode::COLD)latency[i].vali_latency = ((latency[i].vali_end_tv.tv_sec - latency[i].vali_start_tv.tv_sec) * 1000000 + latency[i].vali_end_tv.tv_usec - latency[i].vali_start_tv.tv_usec);
-                        latency[i].write_latency = ((latency[i].write_end_tv.tv_sec - latency[i].write_start_tv.tv_sec) * 1000000 + latency[i].write_end_tv.tv_usec - latency[i].write_start_tv.tv_usec);
-                        latency[i].commit_latency = ((latency[i].commit_end_tv.tv_sec - latency[i].commit_start_tv.tv_sec) * 1000000 + latency[i].commit_end_tv.tv_usec - latency[i].commit_start_tv.tv_usec);
                         retry_time[i] = cnt;
                         wg.Done();
                     });
@@ -288,6 +346,14 @@ int main(int argc, char** argv){
                 task_num * 1.0 / tot);
                 //phased perf
 
+                for(int i=0;i<latency.size();i++){
+                    latency[i].txn_latency = ((latency[i].txn_end_tv.tv_sec - latency[i].txn_start_tv.tv_sec) * 1000000 + latency[i].txn_end_tv.tv_usec - latency[i].txn_start_tv.tv_usec);
+                    latency[i].exe_latency = ((latency[i].exe_end_tv.tv_sec - latency[i].exe_start_tv.tv_sec) * 1000000 + latency[i].exe_end_tv.tv_usec - latency[i].exe_start_tv.tv_usec);
+                    latency[i].lock_latency = ((latency[i].lock_end_tv.tv_sec - latency[i].lock_start_tv.tv_sec) * 1000000 + latency[i].lock_end_tv.tv_usec - latency[i].lock_start_tv.tv_usec);
+                    if(latency[i].mode == Mode::COLD)latency[i].vali_latency = ((latency[i].vali_end_tv.tv_sec - latency[i].vali_start_tv.tv_sec) * 1000000 + latency[i].vali_end_tv.tv_usec - latency[i].vali_start_tv.tv_usec);
+                    latency[i].write_latency = ((latency[i].write_end_tv.tv_sec - latency[i].write_start_tv.tv_sec) * 1000000 + latency[i].write_end_tv.tv_usec - latency[i].write_start_tv.tv_usec);
+                    latency[i].commit_latency = ((latency[i].commit_end_tv.tv_sec - latency[i].commit_start_tv.tv_sec) * 1000000 + latency[i].commit_end_tv.tv_usec - latency[i].commit_start_tv.tv_usec);
+                }
                 
                 std::sort(latency.begin(),latency.end(),cmp_txn);
                 printf("p50 latency:%lf, p99 latency:%lf, p999 latency:%lf\n",latency[(latency.size())/2-1].txn_latency,latency[(latency.size())*99/100-1].txn_latency,latency[(latency.size())*999/1000-1].txn_latency);

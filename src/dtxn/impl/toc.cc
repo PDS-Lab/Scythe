@@ -27,8 +27,8 @@ TxnStatus TOC::Read(TxnObjPtr obj) {
   if (ctx.rc != TxnStatus::OK) {
     return ctx.rc;
   }
-  LOG_DEBUG("[%d] obj [%ld] Read lock_info {lower:%ld, upper:%ld}", this_coroutine::current()->id(), obj->id(),
-            obj->lock_proxy->tl.lower, obj->lock_proxy->tl.upper);
+  // LOG_DEBUG("[%d] obj [%ld] Read lock_info {lower:%ld, upper:%ld}", this_coroutine::current()->id(), obj->id(),
+  //           obj->lock_proxy->tl.lower, obj->lock_proxy->tl.upper);
   if (!obj->lock_proxy->tl.ready()) {
     this_coroutine::co_wait();
     auto ctx = ReadReqCtx{.rc = TxnStatus::INTERNAL, .obj = obj.get(), .self = this_coroutine::current()};
@@ -74,8 +74,8 @@ TxnStatus TOC::Read(const std::vector<TxnObjPtr> &objs) {
     if (ctxs[i].rc == TxnStatus::TOC_RETRY) {
       return TxnStatus::TOC_RETRY;
     }
-    LOG_DEBUG("[%d] obj [%ld] Read lock_info {lower:%ld, upper:%ld}", this_coroutine::current()->id(),
-              ctxs[i].tlp->obj->id(), ctxs[i].tlp->obj->lock_proxy->tl.lower, ctxs[i].tlp->obj->lock_proxy->tl.upper);
+    // LOG_DEBUG("[%d] obj [%ld] Read lock_info {lower:%ld, upper:%ld}", this_coroutine::current()->id(),
+    //           ctxs[i].tlp->obj->id(), ctxs[i].tlp->obj->lock_proxy->tl.lower, ctxs[i].tlp->obj->lock_proxy->tl.upper);
     if (!ctxs[i].tlp->tl.ready()) {
       need_wait++;
     }

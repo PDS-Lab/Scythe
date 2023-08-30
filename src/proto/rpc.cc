@@ -58,12 +58,13 @@ void read_service_cb(void* _reply, void* _arg) {
     }
     case DbStatus::LOCKED: {
       auto queued = reply->lock_info.queued_num();
-      LOG_INFO("read locked, queued num:%lu",queued);
+      //LOG_INFO("read locked, queued num:%lu",queued);
       ctx->rc = queued > kColdWatermark ? TxnStatus::SWITCH : TxnStatus::RETRY;
       break;
     }
     default:
-      LOG_ERROR("read_service failed, %s, obj id: %lx", Status2Str(reply->rc).c_str(),ctx->obj->id());
+      ;
+      //LOG_ERROR("read_service failed, %s, obj id: %lx", Status2Str(reply->rc).c_str(),ctx->obj->id());
   }
   ctx->self->wakeup_once();
 };
@@ -143,13 +144,13 @@ void queuing_read_service_cb(void* _reply, void* _arg) {
       auto obj = ctx->tlp->obj;
       memcpy(obj->buf_, reply->data, obj->size_);
       obj->hold_lock = true;
-      LOG_DEBUG("Ready %ld", obj->id());
+      //LOG_DEBUG("Ready %ld", obj->id());
     } else {
       // delegate lock
       ctx->tlp->us_since_poll = RdtscTimer::instance().us();
       ctx->tlp->hangout = ctx->tlp->tl.queued_num() * RTT;
       this_coroutine::scheduler_delegate(ctx->tlp);
-      LOG_DEBUG("delegate {lower:%ld, upper:%ld}", ctx->tlp->tl.lower, ctx->tlp->tl.upper);
+      //LOG_DEBUG("delegate {lower:%ld, upper:%ld}", ctx->tlp->tl.lower, ctx->tlp->tl.upper);
     }
   } else {
     // queuing failed

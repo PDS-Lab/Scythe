@@ -477,7 +477,7 @@ public:
 
     TPCCTxType* workload_arr_ = nullptr;
 
-    FastRandom* f_rand_ = nullptr;
+    FastRandom** f_rand_ = nullptr;
     
     //是否要做三备份数据节点，暂时不需要
     //std::vector<HashStore*> primary_table_ptrs;
@@ -508,6 +508,12 @@ public:
         if(item_table_) delete item_table_;
         if(stock_table_) delete stock_table_;
         if(workload_arr_) delete[] workload_arr_;
+        if(f_rand_){
+          for(int i=0;i<8;i++){
+            delete f_rand_[i];
+          }
+          delete[] f_rand_;
+        }
     }
     void CreateWorkgenArray();
     void CreateWorkLoad(int task_num);
