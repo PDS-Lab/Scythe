@@ -9,7 +9,7 @@
 #include "util/waitgroup.h"
 
 constexpr int record_num = 16;
-std::string ip = "192.168.1.88";
+std::string ip = "192.168.1.11";
 int port = 10123;
 
 int thread_num;

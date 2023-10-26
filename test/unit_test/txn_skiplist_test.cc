@@ -16,7 +16,7 @@
 // constexpr int kSkipListOid = 1000;
 // thread_local FastRand rnd;
 
-// std::string ip = "192.168.1.88";
+// std::string ip = "192.168.1.11";
 // int port = 10123;
 // int thread_num;
 // size_t op_num;
@@ -284,8 +284,8 @@
 //   ASSERT_EQ(txn->Commit(), TxnStatus::OK);
 // }
 
-// // ./txn_skiplist_test -r s -a 192.168.1.88 -t 10 
-// // ./txn_skiplist_test -r c -a 192.168.1.88 -t 16 --coro 8
+// // ./txn_skiplist_test -r s -a 192.168.1.11 -t 10 
+// // ./txn_skiplist_test -r c -a 192.168.1.11 -t 16 --coro 8
 // int main(int argc, char** argv) {
 //   cmdline::parser cmd;
 //   cmd.add<string>("role", 'r', "the role of process", true, "", cmdline::oneof<string>("c", "s"));

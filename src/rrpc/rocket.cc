@@ -188,6 +188,7 @@ RDMA_CM_ERROR_CODE Rocket::rdma_burst(bool enable_doorbell) {
   return RDMA_CM_ERROR_CODE::CM_SUCCESS;
 }
 
+[[clang::optnone]]
 void Rocket::poll_reply_msg() {
   BatchIter iter;
   reply_callback cb;
@@ -266,7 +267,7 @@ bool Rocket::try_poll_msg(BatchIter* iter, bool* has_next_bucket) {
   }
   return false;
 }
-
+[[clang::optnone]]
 RDMA_CM_ERROR_CODE Rocket::get_msg_buf(void** msg_buf, uint64_t size, uint32_t rpc_id, reply_callback callback,
                                        void* cb_args, bool force_new_bucket) {
   RingBuf* buf = &send_ring_;

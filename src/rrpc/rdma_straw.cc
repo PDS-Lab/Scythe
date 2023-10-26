@@ -344,7 +344,7 @@ RDMA_CM_ERROR_CODE RdmaQp::poll_comp(bool one_side, bool noblock, bool rocket_di
   uint64_t compn = 0;
   for (int i = 0; i < wcn; ++i) {
     if (wc_tmp[i].status != IBV_WC_SUCCESS) {
-      LOG_FATAL("[RDMAQP][poll comp] wcs fail status: %u, onesize %d, op code %d", (uint32_t)wc_tmp[i].status,one_side,wc_tmp[i].opcode);
+      LOG_FATAL("[RDMAQP][poll comp] wcs fail status: %u, oneside %d, op code %d", (uint32_t)wc_tmp[i].status,one_side,wc_tmp[i].opcode);
       if (rocket_direct) lock_.Unlock();
       return RDMA_CM_ERROR_CODE::CM_WC_STATUS_FAILED;
     }

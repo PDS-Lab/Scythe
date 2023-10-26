@@ -1,6 +1,9 @@
+#define TEST_PHASED_LATENCY
+
 #include <gtest/gtest.h>
 #include "util/logging.h"
 #include "cmdline.h"
+#include "micro/micro_txn.h"
 #include "tpcc/tpcc_txn.h"
 #include "smallbank/smallbank_txn.h"
 #include "coroutine_pool/coroutine_pool.h"
@@ -42,7 +45,15 @@ int main(int argc, char** argv){
     cmd.add<string>("benchmark", 'b', "benchmark type", true);
     cmd.add<int>("obj_num",'o',"acct num for smallbank",false,100000);
     cmd.add<double>("exponent",'e',"exponent parameter for zipf",false,0.5);
+    //for micro
+    cmd.add<int>("read_ratio",0,"read_ratio",false,0);
+    cmd.add<int>("insert_ratio",0,"insert ratio",false,0);
+    cmd.add<int>("update_ratio",0,"scan ratio",false,0);
+    cmd.add<int>("delete_ratio",0,"delete ratio",false,0);
+    cmd.add<bool>("skew",0,"is skewed?",false);
+    //for smallbank
     cmd.add<int>("write_ratio",0,"write ratio",false,50,cmdline::oneof(0,30,50,70,100));
+
     cmd.parse_check(argc,argv);
     bool server = cmd.get<string>("role") == "s";
     string bench = cmd.get<string>("benchmark");
@@ -58,6 +69,7 @@ int main(int argc, char** argv){
         global_cm = new RdmaCM(&rte, ip, 10456, rte.get_rdma_buffer(), rte.get_buffer_size(), thread_num);
         InitMemPool(rte.get_rdma_buffer(), rte.get_buffer_size());
         RegisterService();
+        MICRO* micro;
         TPCC_SCHEMA* tpcc;
         SmallBank* smallbank;
         if(bench == "tpcc"){
@@ -121,12 +133,29 @@ int main(int argc, char** argv){
             smallbank_checking_val_t* checking_val = (smallbank_checking_val_t*)res.buf;
             LOG_INFO("checking %u",checking_val->magic);
 
-        }else if(bench == "YCSB"){
-            //TODO
         }else if(bench == "micro"){
+            dbs.resize((size_t)MicroTableType::TableNum);
+            global_db = new KVEngine();
+            dbs[0] = global_db;
+            micro = new MICRO();
+            micro->LoadTable();
+            //check
+            auto db = dbs[(size_t)MicroTableType::kMicroTable];
+            uint64_t test_seed = 114514;
+            uint64_t test_id = FastRand(&test_seed);
+            micro_key_t test_key;
+            test_key.item_key = test_id;
+            ReadResult res;
+            res.buf_size = sizeof(micro_val_t);
+            res.buf = (void*)new(micro_val_t);
+            db->get(test_key.item_key,res,TSO::get_ts(),false);
+            micro_val_t* val = (micro_val_t*)res.buf;
+            for(int i=0;i<5;i++){
+                LOG_ASSERT(val->magic[i]==Micro_MAGIC+i,"Unexpected magic, i:%d, magic:%ld",i,val->magic[i]);
+            }
+            LOG_INFO("check ok");
             //TODO
-        }
-        else {
+        }else {
             LOG_FATAL("Unexpected benchmark name, should not reach here");
         }
         while(true)
@@ -146,8 +175,8 @@ int main(int argc, char** argv){
 
         InitMemPool(rte.get_rdma_buffer(), rte.get_buffer_size());
         if(bench == "tpcc"){
-            // ./bench_runner -r s -a 192.168.1.88 -t 8 -c 8 -b tpcc
-            // ./bench_runner -r c -a 192.168.1.88 -t 2 -c 8 -b tpcc --task 100000
+            // ./bench_runner -r s -a 192.168.1.11 -t 8 -c 8 -b tpcc
+            // ./bench_runner -r c -a 192.168.1.11 -t 16 -c 8 -b tpcc --task 100000
             TPCC_SCHEMA tpcc;
             tpcc.CreateWorkgenArray();
             tpcc.CreateWorkLoad(task_num);
@@ -155,6 +184,8 @@ int main(int argc, char** argv){
             struct timeval start_tv, end_tv;
             vector<PhasedLatency> latency(task_num);
             vector<int> retry_time(task_num,0);
+            LOG_INFO("wait to work");
+            getchar();
             pool.start();
             {
                 WaitGroup wg(task_num);
@@ -193,21 +224,19 @@ int main(int argc, char** argv){
                         //为了测试TOC热度切换，将测试指标的new order事务进行不断重试
                         if(op == TPCCTxType::kNewOrder){
                             mode = Mode::COLD;
+                            gettimeofday(&latency[i].txn_start_tv,nullptr);
                             do{
                                 if(rc == TxnStatus::SWITCH){
                                     mode = Mode::HOT;
                                 }
-                                gettimeofday(&latency[i].txn_start_tv,nullptr);
-
-#define TEST_PHASED_LATENCY
 #ifdef TEST_PHASED_LATENCY
                                 rc = TxnFunc(&tpcc,mode,&latency[i]);
 #else
                                 rc = TxnFunc(&tpcc,mode,nullptr);
 #endif
-                                gettimeofday(&latency[i].txn_end_tv,nullptr);
                                 cnt ++;
                             }while(rc!=TxnStatus::OK);
+                            gettimeofday(&latency[i].txn_end_tv,nullptr);
                         }
                         else {
                             mode = Mode::COLD;
@@ -276,8 +305,8 @@ int main(int argc, char** argv){
 #endif                
             }
         }else if(bench == "smallbank"){
-            // ./bench_runner -r s -a 192.168.1.88 -t 8 -c 8 -b smallbank
-            // ./bench_runner -r c -a 192.168.1.88 -t 16 -c 8 -b smallbank --write_ratio 100 --obj_num 100000 --exponent 0.9 --task 100000 > log/sbDEBUGtest1.log
+            // ./bench_runner -r s -a 192.168.1.11 -t 8 -c 8 -b smallbank
+            // ./bench_runner -r c -a 192.168.1.11 -t 16 -c 8 -b smallbank --write_ratio 100 --obj_num 100000 --exponent 0.9 --task 100000 > log/sbDEBUGtest1.log
             int write_ratio = cmd.get<int>("write_ratio");
             int range = cmd.get<int>("obj_num");
             double exponent = cmd.get<double>("exponent");
@@ -300,6 +329,7 @@ int main(int argc, char** argv){
                             //Every thread should init its own zipf first.
                             LOG_DEBUG("zipf==nullptr");
                             zipf = new zipf_table_distribution<>(range,exponent);
+                            smallbank.zipf = zipf;
                         }
                         auto op = smallbank.workload_arr_[i];
                         smallbank.zipf = zipf;
@@ -369,19 +399,76 @@ int main(int argc, char** argv){
                 }
                 printf("============================ OCC:%zu =========================\n",occ_latency.size());
                 printf("============================ TOC:%zu =========================\n",toc_latency.size());
-                // WaitGroup wg(1);
-                // pool.enqueue([&wg](){
-                //     SmallBank sb;
-                //     SbTxTestReadWrite();
-                //     wg.Done();
-                // });
-                // wg.Wait();
             }
-            
-        }else if(bench == "YCSB"){
-            //TODO
         }else if(bench == "micro"){
-            //TODO
+            // ./bench_runner -r s -a 192.168.1.11 -t 8 -c 8 -b micro
+            // ./bench_runner -r c -a 192.168.1.11 -t 16 -c 8 -b micro --read_ratio 50 --insert_ratio 50 --obj_num 100000 --exponent 0.9 --task 100000 --skew 1 > log/micro1.log
+            int read_ratio = cmd.get<int>("read_ratio");
+            int insert_ratio = cmd.get<int>("insert_ratio");
+            int update_ratio = cmd.get<int>("update_ratio");
+            int delete_ratio = cmd.get<int>("delete_ratio");
+            int obj_num = cmd.get<int>("obj_num");
+            double exponent = cmd.get<double>("exponent");
+            bool is_skewed = cmd.get<bool>("skew");
+
+            MICRO micro(obj_num);
+            micro.CreateWorkgenArray(read_ratio,insert_ratio,update_ratio,delete_ratio);
+            micro.CreateWorkLoad(is_skewed,task_num,obj_num,exponent);
+            CoroutinePool pool(thread_num,cort_per_thread);
+            vector<double> latency(task_num);
+            struct timeval start_tv, end_tv;
+            pool.start();
+            {
+                WaitGroup wg(task_num);
+                gettimeofday(&start_tv,nullptr);
+                for(int i=0;i<task_num;i++){
+                    pool.enqueue([&wg,&micro,&latency,i,obj_num,exponent,is_skewed](){
+                        if(zipf == nullptr){
+                            //Every thread should init its own zipf first.
+                            LOG_DEBUG("zipf==nullptr");
+                            zipf = new zipf_table_distribution<>(obj_num,exponent);
+                            micro.zipf = zipf;
+                        }
+                        auto op = micro.workload_arr_[i];
+                        micro.zipf = zipf;
+                        TxnStatus rc = TxnStatus::OK;
+                        Mode mode = Mode::COLD;
+                        std::function<TxnStatus(MICRO*, Mode, bool, int)>func;
+                        switch (op.TxType)
+                        {
+                        case MICROTxType::kRead:
+                            func = TxRead;break;
+                        case MICROTxType::kInsert:
+                            func = TxInsert;break;
+                        case MICROTxType::kUpdate:
+                            func = TxUpdate;break;
+                        case MICROTxType::kDelete:
+                            func = TxDelete;break;
+                        default:
+                            LOG_FATAL("Unexpected txn type");
+                            break;
+                        }
+                        struct timeval txn_start_tv, txn_end_tv;
+                        gettimeofday(&txn_start_tv,nullptr);
+                        do{
+                            if(rc == TxnStatus::SWITCH){
+                                mode = Mode::HOT;
+                            }
+                            rc = func(&micro,mode,is_skewed,i);
+                        }while(rc!=TxnStatus::OK);
+                        gettimeofday(&txn_end_tv,nullptr);
+                        latency[i] = ((txn_end_tv.tv_sec-txn_start_tv.tv_sec)*1000000 + (txn_end_tv.tv_usec-txn_start_tv.tv_usec));
+                        wg.Done();
+                    });
+                }
+                wg.Wait();
+                gettimeofday(&end_tv,nullptr);
+                uint64_t tot = ((end_tv.tv_sec - start_tv.tv_sec) * 1000000 + end_tv.tv_usec - start_tv.tv_usec);
+                printf("============================ Throughput:%lf MOPS =========================\n", 
+                task_num * 1.0 / tot);
+            }
+            std::sort(latency.begin(),latency.end());
+            printf("p50 latency:%lf, p99 latency:%lf, p999 latency:%lf\n",latency[(latency.size())/2-1],latency[(latency.size())*99/100-1],latency[(latency.size())*999/1000-1]);
         }
         else {
             LOG_FATAL("Unexpected benchmark name, should not reach here");

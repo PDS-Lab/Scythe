@@ -180,3 +180,18 @@ void debug_read_service_cb(void* _reply, void* _arg) {
     LOG_INFO("Failed %s", Status2Str(ctx->rc).c_str());
   }
 };
+
+void micro_read_service(Rocket::BatchIter* iter, Rocket* rkt){
+  auto req = iter->get_request<MicroRead>();
+  auto reply = rkt->gen_reply<MicroReadReply>(sizeof(DebugReadReply) + req->sz, iter);
+  
+}
+void micro_read_service_cb(void* _reply, void* _arg){
+
+}
+void micro_insert_service(Rocket::BatchIter* iter, Rocket* rkt){
+
+}
+void micro_insert_service_cb(void* _reply, void* _arg){
+
+}

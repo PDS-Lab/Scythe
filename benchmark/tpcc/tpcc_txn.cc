@@ -91,6 +91,8 @@ TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc, Mode mode, PhasedLatency* phased_lat){
     tpcc_warehouse_key_t ware_key;
     ware_key.w_id = warehouse_id;
     auto ware_obj = txn->GetObject(ware_key.item_key,(uint32_t)TPCCTableType::kWarehouseTable, sizeof(tpcc_warehouse_val_t));
+    std::vector<TxnObjPtr> read_set;
+    // read_set.push_back(ware_obj);
     auto rc = txn->Read(ware_obj);
     if(rc!=TxnStatus::OK){
       txn->Rollback();
@@ -100,6 +102,7 @@ TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc, Mode mode, PhasedLatency* phased_lat){
     tpcc_customer_key_t cust_key;
     cust_key.c_id = c_key;
     auto cust_obj = txn->GetObject(cust_key.item_key,(uint32_t)TPCCTableType::kCustomerTable,sizeof(tpcc_customer_val_t));
+    //read_set.push_back(cust_obj);
     rc = txn->Read(cust_obj);
     if(rc!=TxnStatus::OK){
       txn->Rollback();
@@ -115,6 +118,14 @@ TxnStatus TxNewOrder(TPCC_SCHEMA* tpcc, Mode mode, PhasedLatency* phased_lat){
       txn->Rollback();
       return rc;
     }
+    // read_set.push_back(dist_obj);
+    // auto rc = txn->Read(read_set);
+    // if(rc!=TxnStatus::OK){
+    //   // if(mode==Mode::HOT)
+    //   //   LOG_ERROR("rc:%d",rc);
+    //   txn->Rollback();
+    //   return rc;
+    // }
     
     //incrementNextOrderId
     auto dist_val = dist_obj->get_as<tpcc_district_val_t>();

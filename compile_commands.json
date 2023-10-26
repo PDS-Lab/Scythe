@@ -1,0 +1,222 @@
+[
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/coroutine_pool/coroutine.cc.o -c /home/zsq/hot-t-main/src/coroutine_pool/coroutine.cc",
+  "file": "/home/zsq/hot-t-main/src/coroutine_pool/coroutine.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/coroutine_pool/coroutine_pool.cc.o -c /home/zsq/hot-t-main/src/coroutine_pool/coroutine_pool.cc",
+  "file": "/home/zsq/hot-t-main/src/coroutine_pool/coroutine_pool.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/coroutine_pool/scheduler.cc.o -c /home/zsq/hot-t-main/src/coroutine_pool/scheduler.cc",
+  "file": "/home/zsq/hot-t-main/src/coroutine_pool/scheduler.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/dtxn/dtxn.cc.o -c /home/zsq/hot-t-main/src/dtxn/dtxn.cc",
+  "file": "/home/zsq/hot-t-main/src/dtxn/dtxn.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/dtxn/impl/occ.cc.o -c /home/zsq/hot-t-main/src/dtxn/impl/occ.cc",
+  "file": "/home/zsq/hot-t-main/src/dtxn/impl/occ.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/dtxn/impl/toc.cc.o -c /home/zsq/hot-t-main/src/dtxn/impl/toc.cc",
+  "file": "/home/zsq/hot-t-main/src/dtxn/impl/toc.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/dtxn/takeout_lock.cc.o -c /home/zsq/hot-t-main/src/dtxn/takeout_lock.cc",
+  "file": "/home/zsq/hot-t-main/src/dtxn/takeout_lock.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/proto/rdma.cc.o -c /home/zsq/hot-t-main/src/proto/rdma.cc",
+  "file": "/home/zsq/hot-t-main/src/proto/rdma.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/proto/rpc.cc.o -c /home/zsq/hot-t-main/src/proto/rpc.cc",
+  "file": "/home/zsq/hot-t-main/src/proto/rpc.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/rrpc/rdma_cm.cc.o -c /home/zsq/hot-t-main/src/rrpc/rdma_cm.cc",
+  "file": "/home/zsq/hot-t-main/src/rrpc/rdma_cm.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/rrpc/rdma_poll_worker.cc.o -c /home/zsq/hot-t-main/src/rrpc/rdma_poll_worker.cc",
+  "file": "/home/zsq/hot-t-main/src/rrpc/rdma_poll_worker.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/rrpc/rdma_straw.cc.o -c /home/zsq/hot-t-main/src/rrpc/rdma_straw.cc",
+  "file": "/home/zsq/hot-t-main/src/rrpc/rdma_straw.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/rrpc/ring_buf.cc.o -c /home/zsq/hot-t-main/src/rrpc/ring_buf.cc",
+  "file": "/home/zsq/hot-t-main/src/rrpc/ring_buf.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/rrpc/rocket.cc.o -c /home/zsq/hot-t-main/src/rrpc/rocket.cc",
+  "file": "/home/zsq/hot-t-main/src/rrpc/rocket.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/rrpc/rrpc_callbacks.cc.o -c /home/zsq/hot-t-main/src/rrpc/rrpc_callbacks.cc",
+  "file": "/home/zsq/hot-t-main/src/rrpc/rrpc_callbacks.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/rrpc/tcp_adaptor.cc.o -c /home/zsq/hot-t-main/src/rrpc/tcp_adaptor.cc",
+  "file": "/home/zsq/hot-t-main/src/rrpc/tcp_adaptor.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/rrpc/tcp_callbacks.cc.o -c /home/zsq/hot-t-main/src/rrpc/tcp_callbacks.cc",
+  "file": "/home/zsq/hot-t-main/src/rrpc/tcp_callbacks.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/storage/db.cc.o -c /home/zsq/hot-t-main/src/storage/db.cc",
+  "file": "/home/zsq/hot-t-main/src/storage/db.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/storage/object.cc.o -c /home/zsq/hot-t-main/src/storage/object.cc",
+  "file": "/home/zsq/hot-t-main/src/storage/object.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/storage/simple_db.cc.o -c /home/zsq/hot-t-main/src/storage/simple_db.cc",
+  "file": "/home/zsq/hot-t-main/src/storage/simple_db.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/base.dir/src/util/mem_pool.cc.o -c /home/zsq/hot-t-main/src/util/mem_pool.cc",
+  "file": "/home/zsq/hot-t-main/src/util/mem_pool.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/_deps/googletest-build/googlemock",
+  "command": "/usr/bin/c++   -isystem /home/zsq/hot-t-main/_deps/googletest-src/googlemock/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googlemock -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -Wall -Wshadow -Wconversion -DGTEST_HAS_PTHREAD=1 -fexceptions -W -Wpointer-arith -Wreturn-type -Wcast-qual -Wwrite-strings -Wswitch -Wunused-parameter -Wcast-align -Wchar-subscripts -Winline -Wredundant-decls -std=c++14 -o CMakeFiles/gmock_main.dir/src/gmock_main.cc.o -c /home/zsq/hot-t-main/_deps/googletest-src/googlemock/src/gmock_main.cc",
+  "file": "/home/zsq/hot-t-main/_deps/googletest-src/googlemock/src/gmock_main.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/_deps/googletest-build/googlemock",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/_deps/googletest-src/googlemock/include -I/home/zsq/hot-t-main/_deps/googletest-src/googlemock -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -Wall -Wshadow -Wconversion -DGTEST_HAS_PTHREAD=1 -fexceptions -W -Wpointer-arith -Wreturn-type -Wcast-qual -Wwrite-strings -Wswitch -Wunused-parameter -Wcast-align -Wchar-subscripts -Winline -Wredundant-decls -std=c++14 -o CMakeFiles/gmock.dir/src/gmock-all.cc.o -c /home/zsq/hot-t-main/_deps/googletest-src/googlemock/src/gmock-all.cc",
+  "file": "/home/zsq/hot-t-main/_deps/googletest-src/googlemock/src/gmock-all.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/_deps/googletest-build/googletest",
+  "command": "/usr/bin/c++   -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -Wall -Wshadow -Wconversion -DGTEST_HAS_PTHREAD=1 -fexceptions -W -Wpointer-arith -Wreturn-type -Wcast-qual -Wwrite-strings -Wswitch -Wunused-parameter -Wcast-align -Wchar-subscripts -Winline -Wredundant-decls -std=c++14 -o CMakeFiles/gtest_main.dir/src/gtest_main.cc.o -c /home/zsq/hot-t-main/_deps/googletest-src/googletest/src/gtest_main.cc",
+  "file": "/home/zsq/hot-t-main/_deps/googletest-src/googletest/src/gtest_main.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/_deps/googletest-build/googletest",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/_deps/googletest-src/googletest/include -I/home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -Wall -Wshadow -Wconversion -DGTEST_HAS_PTHREAD=1 -fexceptions -W -Wpointer-arith -Wreturn-type -Wcast-qual -Wwrite-strings -Wswitch -Wunused-parameter -Wcast-align -Wchar-subscripts -Winline -Wredundant-decls -std=c++14 -o CMakeFiles/gtest.dir/src/gtest-all.cc.o -c /home/zsq/hot-t-main/_deps/googletest-src/googletest/src/gtest-all.cc",
+  "file": "/home/zsq/hot-t-main/_deps/googletest-src/googletest/src/gtest-all.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/test",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/coroutine_test.dir/unit_test/coroutine_test.cc.o -c /home/zsq/hot-t-main/test/unit_test/coroutine_test.cc",
+  "file": "/home/zsq/hot-t-main/test/unit_test/coroutine_test.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/test",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/learning_simple_test.dir/unit_test/learning_simple_test.cc.o -c /home/zsq/hot-t-main/test/unit_test/learning_simple_test.cc",
+  "file": "/home/zsq/hot-t-main/test/unit_test/learning_simple_test.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/test",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/mem_pool_test.dir/unit_test/mem_pool_test.cc.o -c /home/zsq/hot-t-main/test/unit_test/mem_pool_test.cc",
+  "file": "/home/zsq/hot-t-main/test/unit_test/mem_pool_test.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/test",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/micro_simple_test.dir/unit_test/micro_simple_test.cc.o -c /home/zsq/hot-t-main/test/unit_test/micro_simple_test.cc",
+  "file": "/home/zsq/hot-t-main/test/unit_test/micro_simple_test.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/test",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/mv_object_test.dir/unit_test/mv_object_test.cc.o -c /home/zsq/hot-t-main/test/unit_test/mv_object_test.cc",
+  "file": "/home/zsq/hot-t-main/test/unit_test/mv_object_test.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/test",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/txn_simple_test.dir/unit_test/txn_simple_test.cc.o -c /home/zsq/hot-t-main/test/unit_test/txn_simple_test.cc",
+  "file": "/home/zsq/hot-t-main/test/unit_test/txn_simple_test.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/test",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/storage_test.dir/unit_test/storage_test.cc.o -c /home/zsq/hot-t-main/test/unit_test/storage_test.cc",
+  "file": "/home/zsq/hot-t-main/test/unit_test/storage_test.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/test",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/rrpc_test.dir/unit_test/rrpc_test.cc.o -c /home/zsq/hot-t-main/test/unit_test/rrpc_test.cc",
+  "file": "/home/zsq/hot-t-main/test/unit_test/rrpc_test.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/test",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/rrpc_coroutine_test.dir/unit_test/rrpc_coroutine_test.cc.o -c /home/zsq/hot-t-main/test/unit_test/rrpc_coroutine_test.cc",
+  "file": "/home/zsq/hot-t-main/test/unit_test/rrpc_coroutine_test.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/test",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/txn_skiplist_test.dir/unit_test/txn_skiplist_test.cc.o -c /home/zsq/hot-t-main/test/unit_test/txn_skiplist_test.cc",
+  "file": "/home/zsq/hot-t-main/test/unit_test/txn_skiplist_test.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/benchmark",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/tpcc_bench_test.dir/tpcc_bench_test.cc.o -c /home/zsq/hot-t-main/benchmark/tpcc_bench_test.cc",
+  "file": "/home/zsq/hot-t-main/benchmark/tpcc_bench_test.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/benchmark",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/bench_runner.dir/bench_runner.cc.o -c /home/zsq/hot-t-main/benchmark/bench_runner.cc",
+  "file": "/home/zsq/hot-t-main/benchmark/bench_runner.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/benchmark",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/skiplist_benchmark_test.dir/skiplist_benchmark_test.cc.o -c /home/zsq/hot-t-main/benchmark/skiplist_benchmark_test.cc",
+  "file": "/home/zsq/hot-t-main/benchmark/skiplist_benchmark_test.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/benchmark/micro",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/micro_txn.dir/micro_txn.cc.o -c /home/zsq/hot-t-main/benchmark/micro/micro_txn.cc",
+  "file": "/home/zsq/hot-t-main/benchmark/micro/micro_txn.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/benchmark/micro",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/micro_db.dir/micro_db.cc.o -c /home/zsq/hot-t-main/benchmark/micro/micro_db.cc",
+  "file": "/home/zsq/hot-t-main/benchmark/micro/micro_db.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/benchmark/tpcc",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/tpcc_txn.dir/tpcc_txn.cc.o -c /home/zsq/hot-t-main/benchmark/tpcc/tpcc_txn.cc",
+  "file": "/home/zsq/hot-t-main/benchmark/tpcc/tpcc_txn.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/benchmark/tpcc",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/tpcc_db.dir/tpcc_db.cc.o -c /home/zsq/hot-t-main/benchmark/tpcc/tpcc_db.cc",
+  "file": "/home/zsq/hot-t-main/benchmark/tpcc/tpcc_db.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/benchmark/smallbank",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/smallbank_txn.dir/smallbank_txn.cc.o -c /home/zsq/hot-t-main/benchmark/smallbank/smallbank_txn.cc",
+  "file": "/home/zsq/hot-t-main/benchmark/smallbank/smallbank_txn.cc"
+},
+{
+  "directory": "/home/zsq/hot-t-main/benchmark/smallbank",
+  "command": "/usr/bin/c++   -I/home/zsq/hot-t-main/src -I/home/zsq/hot-t-main/third_party -I/home/zsq/hot-t-main/benchmark -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest/include -isystem /home/zsq/hot-t-main/_deps/googletest-src/googletest   -O0 -g -fPIE -g   -std=gnu++14 -o CMakeFiles/smallbank_db.dir/smallbank_db.cc.o -c /home/zsq/hot-t-main/benchmark/smallbank/smallbank_db.cc",
+  "file": "/home/zsq/hot-t-main/benchmark/smallbank/smallbank_db.cc"
+}
+]

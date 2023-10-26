@@ -13,7 +13,7 @@
 #include "util/timer.h"
 #include "util/waitgroup.h"
 
-std::string ip = "192.168.1.88";
+std::string ip = "192.168.1.11";
 int port = 10456;
 
 int dev_id = 0;
@@ -130,7 +130,7 @@ int main(int argc, char** argv){
 
     server = argv[1][0] == 's';
     if(server){
-        ip = "192.168.1.88";
+        ip = "192.168.1.11";
         thread_num = 4;//::atoi()
         msg_size = 64;//
 

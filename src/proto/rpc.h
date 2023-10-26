@@ -136,12 +136,45 @@ struct DebugReadCtx {
 void debug_read_service(Rocket::BatchIter* iter, Rocket* rkt);
 void debug_read_service_cb(void* _reply, void* _arg);
 
+typedef std::pair<std::string, std::string> KVPair;
+// -------------------- micro -------------------
+struct MicroRead{
+  uint64_t id;
+  uint32_t sz;
+  timestamp_t ts;
+};
+struct MicroReadReply{
+  DbStatus rc;
+  size_t sz;
+  data_t raw[0];
+};
+struct MicroReadCtx{
+  DbStatus rc;
+  void *buf;
+};
+struct MicroInsert{
+
+};
+struct MicroInsertReply{
+
+};
+struct MicroInsertCtx{
+
+};
+
+void micro_read_service(Rocket::BatchIter* iter, Rocket* rkt);
+void micro_read_service_cb(void* _reply, void* _arg);
+void micro_insert_service(Rocket::BatchIter* iter, Rocket* rkt);
+void micro_insert_service_cb(void* _reply, void* _arg);
+
 enum RpcId {
   READ = 123,
   QUEUING,
   WRITE,
   QUEUING_READ,
   DEBUG_READ,
+  MICRO_READ,
+  MICRO_INSERT,
 };
 
 static inline void RegisterService() {
@@ -150,4 +183,6 @@ static inline void RegisterService() {
   reg_rpc_service(WRITE, write_service);
   reg_rpc_service(QUEUING_READ, queuing_read_service);
   reg_rpc_service(DEBUG_READ, debug_read_service);
+  reg_rpc_service(MICRO_READ,micro_read_service);
+  reg_rpc_service(MICRO_INSERT,micro_insert_service);
 };

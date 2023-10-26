@@ -12,7 +12,7 @@
 #include "util/timer.h"
 #include "util/waitgroup.h"
 
-std::string ip = "192.168.1.88";
+std::string ip = "192.168.1.11";
 int port = 10123;
 
 int dev_id = 0;
@@ -165,7 +165,7 @@ int main(int argc, char** argv) {
     delete[] raw_buf;
 
   } else {
-    //./rrpc_coroutine_test c 192.168.1.88 4 64 1024 4 4 1 4 4 
+    //./rrpc_coroutine_test c 192.168.1.11 4 64 1024 4 4 1 4 4 
     ENSURE(argc == 11,
            "arguments: 'c' <ip> <thread> <msg_size> <op_num> <cort_num> <batch_size> "
            "<type> <qp> <one_side_qp>");

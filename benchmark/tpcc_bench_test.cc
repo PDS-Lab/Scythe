@@ -75,7 +75,7 @@
 // zipf_table_distribution<>* item_id_randomer_;
 // std::uniform_int_distribution<>* item_num_randomer_;
 
-// std::string ip = "192.168.1.88";
+// std::string ip = "192.168.1.11";
 // int port = 10123;
 // int thread_num;
 // int task_num;
@@ -296,8 +296,8 @@
 //   new_txn->Commit();
 // }
 
-// //./tpcc_bench_test -r s -a 192.168.1.88 -t 10 -c 1 -n 100000
-// //./tpcc_bench_test -r c -a 192.168.1.88 -t 8 -c 8 -n 100000
+// //./tpcc_bench_test -r s -a 192.168.1.11 -t 10 -c 1 -n 100000
+// //./tpcc_bench_test -r c -a 192.168.1.11 -t 8 -c 8 -n 100000
 // int main(int argc, char** argv) {
 //   cmdline::parser cmd;
 //   cmd.add<string>("role", 'r', "the role of process", true, "", cmdline::oneof<string>("c", "s"));

@@ -1,0 +1,10 @@
+build/
+.vscode/
+.cache/
+CMakeFiles/
+bin/
+_deps/
+benchmark/log
+*.txt
+*.log
+*.cmake

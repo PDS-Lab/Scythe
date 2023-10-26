@@ -34,7 +34,7 @@
 // thread_local FastRand rnd;
 
 
-// std::string ip = "192.168.1.88";
+// std::string ip = "192.168.1.11";
 // int port = 10123;
 // int thread_num;
 // size_t op_num;
@@ -392,8 +392,8 @@
 //   LOG_INFO("ok");
 // }
 
-// //  ./skiplist_benchmark_test -r s -a 192.168.1.88 -t 4
-// //  ./skiplist_benchmark_test -r c -a 192.168.1.88 -t 8 --coro 8 --op 100 -w 50
+// //  ./skiplist_benchmark_test -r s -a 192.168.1.11 -t 4
+// //  ./skiplist_benchmark_test -r c -a 192.168.1.11 -t 8 --coro 8 --op 100 -w 50
 // int main(int argc, char** argv) {
 //   cmdline::parser cmd;
 //   cmd.add<string>("role", 'r', "the role of process", true, "", cmdline::oneof<string>("c", "s"));

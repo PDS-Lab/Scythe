@@ -82,17 +82,17 @@ class Rocket {
       }
       return false;
     }
-    uint32_t get_tag() { return ((volatile MsgHead*)(msg_addr))->tag; }
-    uint32_t get_rpc_id() { return ((volatile MsgHead*)(msg_addr))->rpc_id; }
-    uint32_t get_ack_id() { return ((volatile MsgHead*)(msg_addr))->recv_buf_ack_id; }
-    uint32_t get_msg_sz() {
+    inline uint32_t get_tag() { return ((volatile MsgHead*)(msg_addr))->tag; }
+    inline uint32_t get_rpc_id() { return ((volatile MsgHead*)(msg_addr))->rpc_id; }
+    inline uint32_t get_ack_id() { return ((volatile MsgHead*)(msg_addr))->recv_buf_ack_id; }
+    inline uint32_t get_msg_sz() {
       uint64_t tmp = ((volatile MsgHead*)(msg_addr))->msg_sz;
       return tmp & RingBuf::LENGTH_MASK;
     }
-    uint64_t get_callback_func_addr() { return ((volatile MsgHead*)(msg_addr))->callback_func_addr; }
-    uint64_t get_cb_func_args_addr() { return ((volatile MsgHead*)(msg_addr))->cb_func_args_addr; }
-    void* get_msg_data() { return (void*)((char*)(msg_addr) + sizeof(MsgHead)); }
-    void* get_addr() { return msg_addr; }
+    inline uint64_t get_callback_func_addr() { return ((volatile MsgHead*)(msg_addr))->callback_func_addr; }
+    inline uint64_t get_cb_func_args_addr() { return ((volatile MsgHead*)(msg_addr))->cb_func_args_addr; }
+    inline void* get_msg_data() { return (void*)((char*)(msg_addr) + sizeof(MsgHead)); }
+    inline void* get_addr() { return msg_addr; }
     void* msg_addr;
   };
 
@@ -109,6 +109,7 @@ class Rocket {
   RDMA_CM_ERROR_CODE connect(std::string ip, int port, const ConnectOptions& opts);
 
   template <typename T>
+  [[clang::optnone]]
   T* gen_request(uint64_t size, uint32_t rpc_id, reply_callback callback = nullptr, void* cb_args = nullptr,
                  bool force_new_bucket = false) {
     void* msg_buf;
