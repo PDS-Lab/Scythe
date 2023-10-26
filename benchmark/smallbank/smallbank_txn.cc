@@ -3,7 +3,7 @@
 #include <string>
 using std::string;
 
-TxnStatus TxAmalgamate(SmallBank* smallbank, Mode mode, int index, PhasedLatency* phased_lat){
+TxnStatus TxAmalgamate(SmallBank* smallbank, Mode mode, PhasedLatency* phased_lat){
     auto txn = TransactionFactory::TxnBegin(mode, (uint32_t)SmallBankTableType::TableNum);
     uint64_t acct_id_0, acct_id_1;
     smallbank->get_two_accounts(&acct_id_0, &acct_id_1);
@@ -54,7 +54,7 @@ TxnStatus TxAmalgamate(SmallBank* smallbank, Mode mode, int index, PhasedLatency
     return txn->Commit();
 }
 /* Calculate the sum of saving and checking kBalance */
-TxnStatus TxBalance(SmallBank* smallbank, Mode mode, int index, PhasedLatency* phased_lat){
+TxnStatus TxBalance(SmallBank* smallbank, Mode mode, PhasedLatency* phased_lat){
     auto txn = TransactionFactory::TxnBegin(mode, (uint32_t)SmallBankTableType::TableNum);
     uint64_t acct_id;
     //LOG_INFO("acct0:%lu",acct_id);
@@ -89,7 +89,7 @@ TxnStatus TxBalance(SmallBank* smallbank, Mode mode, int index, PhasedLatency* p
     return txn->Commit();
 }
 /* Add $1.3 to acct_id's checking account */
-TxnStatus TxDepositChecking(SmallBank* smallbank, Mode mode, int index, PhasedLatency* phased_lat){
+TxnStatus TxDepositChecking(SmallBank* smallbank, Mode mode,  PhasedLatency* phased_lat){
     auto txn = TransactionFactory::TxnBegin(mode,(uint32_t)SmallBankTableType::TableNum);
     uint64_t acct_id;
     smallbank->get_account(&acct_id);
@@ -129,7 +129,7 @@ TxnStatus TxDepositChecking(SmallBank* smallbank, Mode mode, int index, PhasedLa
     return txn->Commit();
 }
 /* Send $5 from acct_id_0's checking account to acct_id_1's checking account */
-TxnStatus TxSendPayment(SmallBank* smallbank, Mode mode, int index, PhasedLatency* phased_lat){
+TxnStatus TxSendPayment(SmallBank* smallbank, Mode mode, PhasedLatency* phased_lat){
     auto txn = TransactionFactory::TxnBegin(mode,(uint32_t)SmallBankTableType::TableNum);
     uint64_t acct_id_0, acct_id_1;
     smallbank->get_two_accounts(&acct_id_0, &acct_id_1);
@@ -182,7 +182,7 @@ TxnStatus TxSendPayment(SmallBank* smallbank, Mode mode, int index, PhasedLatenc
     return txn->Commit();
 }
 /* Add $20 to acct_id's saving's account */
-TxnStatus TxTransactSaving(SmallBank* smallbank, Mode mode, int index, PhasedLatency* phased_lat){
+TxnStatus TxTransactSaving(SmallBank* smallbank, Mode mode, PhasedLatency* phased_lat){
     auto txn = TransactionFactory::TxnBegin(mode,(uint32_t)SmallBankTableType::TableNum);
     uint64_t acct_id;
     smallbank->get_account(&acct_id);
@@ -219,7 +219,7 @@ TxnStatus TxTransactSaving(SmallBank* smallbank, Mode mode, int index, PhasedLat
     return txn->Commit();
 }
 /* Read saving and checking kBalance + update checking kBalance unconditionally */
-TxnStatus TxWriteCheck(SmallBank* smallbank, Mode mode, int index, PhasedLatency* phased_lat){
+TxnStatus TxWriteCheck(SmallBank* smallbank, Mode mode, PhasedLatency* phased_lat){
     auto txn = TransactionFactory::TxnBegin(mode,(uint32_t)SmallBankTableType::TableNum);
     uint64_t acct_id;
     smallbank->get_account(&acct_id);
