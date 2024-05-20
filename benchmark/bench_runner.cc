@@ -184,8 +184,6 @@ int main(int argc, char** argv){
             struct timeval start_tv, end_tv;
             vector<PhasedLatency> latency(task_num);
             vector<int> retry_time(task_num,0);
-            LOG_INFO("wait to work");
-            getchar();
             pool.start();
             {
                 WaitGroup wg(task_num);

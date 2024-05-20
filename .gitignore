@@ -4,7 +4,9 @@ build/
 CMakeFiles/
 bin/
 _deps/
+lib/
 benchmark/log
-*.txt
 *.log
 *.cmake
+*.a
+*.json
