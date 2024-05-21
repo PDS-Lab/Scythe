@@ -72,13 +72,13 @@ Benchmark tests are under build/benchmark,  requiring two machines as server or 
     * server:
 
       ``` shell
-    ./bench_runner -r s -a 192.168.1.51 -t 8 -b micro
+      ./bench_runner -r s -a 192.168.1.51 -t 8 -b micro
       ```
 
     * client:
 
       ``` shell
-    ./bench_runner -r c -a 192.168.1.51 -t 16 -c 8 -b micro --read_ratio 50 --insert_ratio 50 --obj_num 100000 --exponent 0.9 --task 10000 > log/micro.log
+      ./bench_runner -r c -a 192.168.1.51 -t 16 -c 8 -b micro --read_ratio 50 --insert_ratio 50 --obj_num 100000 --exponent 0.9 --task 10000 > log/micro.log
       ```
   
 * Smallbank
